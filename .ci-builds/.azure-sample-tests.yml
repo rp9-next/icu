@@ -29,13 +29,13 @@ jobs:
       inputs:
         filename: icu4c/source/allinone/icucheck.bat
         arguments: 'x64 Debug'
-    - task: VSBuild@2
-      displayName: 'Build Solution'
+    - task: VSBuild@1
+      displayName: 'Build Sample Solution'
       inputs:
         solution: icu4c/source/samples/all/all.sln
         platform: x64
         configuration: Debug
-    - task: BatchScript@2
+    - task: BatchScript@1
       displayName: 'Test Samples (samplecheck.bat)'
       inputs:
         filename: icu4c/source/samples/all/samplecheck.bat
