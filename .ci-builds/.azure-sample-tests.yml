@@ -105,7 +105,7 @@ jobs:
       displayName: 'Build Sample Solution'
       inputs:
         solution: icu4c/source/samples/all/all.sln
-        platform: Win32
+        platform: x86
         configuration: Debug
     - task: BatchScript@1
       displayName: 'Test Samples (samplecheck.bat)'
@@ -141,7 +141,7 @@ jobs:
       displayName: 'Build Sample Solution'
       inputs:
         solution: icu4c/source/samples/all/all.sln
-        platform: Win32
+        platform: x86
         configuration: Release
     - task: BatchScript@1
       displayName: 'Test Samples (samplecheck.bat)'
