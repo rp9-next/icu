@@ -110,11 +110,11 @@ int main( void )
     UErrorCode status = U_ZERO_ERROR;
     boundary = BreakIterator::createSentenceInstance(
         Locale::getUS(), status );
-    //if (U_FAILURE(status)) {
+    if (U_FAILURE(status)) {
         printf("failed to create sentence break iterator.  status = %s", 
             u_errorName(status));
         exit(1);
-    //}
+    }
 
     boundary->setText(stringToExamine);
     puts("\n Sentence Boundaries... ");
