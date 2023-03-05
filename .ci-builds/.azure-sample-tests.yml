@@ -1,4 +1,8 @@
 # Azure Pipelines (VSTS) configuration for CI builds for ICU.
+trigger:
+  branches:
+    include:
+    - main
 
 jobs:
 
