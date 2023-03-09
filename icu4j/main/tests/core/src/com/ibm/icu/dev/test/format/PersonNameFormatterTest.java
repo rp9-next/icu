@@ -103,9 +103,9 @@ public class PersonNameFormatterTest extends TestFmwk{
     @Test
     public void TestEnglishName() {
         executeTestCases(new NameAndTestCases[]{
-            new NameAndTestCases("locale=en_US,prefix=Mr.,given=Richard,given-informal=Rich,given2=Theodore,surname=Gillam", new String[][] {
+            new NameAndTestCases("locale=en_US,title=Mr.,given=Richard,given-informal=Rich,given2=Theodore,surname=Gillam", new String[][] {
                 // test all the different combinations of parameters with the normal name order
-                { "en_US", "LONG",   "REFERRING",  "FORMAL",   "",              "Richard Theodore Gillam" },
+                { "en_US", "LONG",   "REFERRING",  "FORMAL",   "",              "Mr. Richard Theodore Gillam" },
                 { "en_US", "LONG",   "REFERRING",  "INFORMAL", "",              "Rich Gillam" },
                 { "en_US", "LONG",   "ADDRESSING", "FORMAL",   "",              "Mr. Gillam" },
                 { "en_US", "LONG",   "ADDRESSING", "INFORMAL", "",              "Rich" },
@@ -113,7 +113,8 @@ public class PersonNameFormatterTest extends TestFmwk{
                 { "en_US", "MEDIUM", "REFERRING",  "INFORMAL", "",              "Rich Gillam" },
                 { "en_US", "MEDIUM", "ADDRESSING", "FORMAL",   "",              "Mr. Gillam" },
                 { "en_US", "MEDIUM", "ADDRESSING", "INFORMAL", "",              "Rich" },
-                { "en_US", "SHORT",  "REFERRING",  "FORMAL",   "",              "R. T. Gillam" },
+                //{ "en_US", "SHORT",  "REFERRING",  "FORMAL",   "",              "R. T. Gillam" },
+                { "en_US", "SHORT",  "REFERRING",  "FORMAL",   "",              "R.T. Gillam" }, // result changed with CLDR 43-alpha1
                 { "en_US", "SHORT",  "REFERRING",  "INFORMAL", "",              "Rich G." },
                 { "en_US", "SHORT",  "ADDRESSING", "FORMAL",   "",              "Mr. Gillam" },
                 { "en_US", "SHORT",  "ADDRESSING", "INFORMAL", "",              "Rich" },
@@ -123,7 +124,8 @@ public class PersonNameFormatterTest extends TestFmwk{
                 { "en_US", "LONG",   "REFERRING",  "INFORMAL", "SORTING",       "Gillam, Rich" },
                 { "en_US", "MEDIUM", "REFERRING",  "FORMAL",   "SORTING",       "Gillam, Richard T." },
                 { "en_US", "MEDIUM", "REFERRING",  "INFORMAL", "SORTING",       "Gillam, Rich" },
-                { "en_US", "SHORT",  "REFERRING",  "FORMAL",   "SORTING",       "Gillam, R. T." },
+                //{ "en_US", "SHORT",  "REFERRING",  "FORMAL",   "SORTING",       "Gillam, R. T." },
+                { "en_US", "SHORT",  "REFERRING",  "FORMAL",   "SORTING",       "Gillam, R.T." }, // result changed with CLDR 43-alpha1
                 { "en_US", "SHORT",  "REFERRING",  "INFORMAL", "SORTING",       "Gillam, Rich" },
 
                 // we don't really support ADDRESSING in conjunction with SORTING-- it should always
@@ -132,7 +134,8 @@ public class PersonNameFormatterTest extends TestFmwk{
                 { "en_US", "LONG",   "ADDRESSING", "INFORMAL", "SORTING",       "Gillam, Rich" },
                 { "en_US", "MEDIUM", "ADDRESSING", "FORMAL",   "SORTING",       "Gillam, Richard T." },
                 { "en_US", "MEDIUM", "ADDRESSING", "INFORMAL", "SORTING",       "Gillam, Rich" },
-                { "en_US", "SHORT",  "ADDRESSING", "FORMAL",   "SORTING",       "Gillam, R. T." },
+                //{ "en_US", "SHORT",  "ADDRESSING", "FORMAL",   "SORTING",       "Gillam, R. T." },
+                { "en_US", "SHORT",  "ADDRESSING", "FORMAL",   "SORTING",       "Gillam, R.T." }, // result changed with CLDR 43-alpha1
                 { "en_US", "SHORT",  "ADDRESSING", "INFORMAL", "SORTING",       "Gillam, Rich" },
 
                 // finally, try the different variations of MONOGRAM
@@ -178,7 +181,8 @@ public class PersonNameFormatterTest extends TestFmwk{
 
                 // the default (English) logic for initials doesn't do anything special with the surname-prefix--
                 // it gets initials too, which is probably wrong
-                { "en_US", "SHORT",  "REFERRING",  "INFORMAL", "",              "Willem v. d. P." },
+                //{ "en_US", "SHORT",  "REFERRING",  "INFORMAL", "",              "Willem v. d. P." },
+                { "en_US", "SHORT",  "REFERRING",  "INFORMAL", "",              "Willem v.d.P." }, // result changed with CLDR 43-alpha1
 
                 // and (English) monogram generation doesn't do anything special with the prefix either
                 { "en_US", "LONG",   "MONOGRAM",   "FORMAL",   "",              "WV" },
@@ -255,7 +259,7 @@ public class PersonNameFormatterTest extends TestFmwk{
         executeTestCases(new NameAndTestCases[]{
             // literal text elision is difficult to test with the real locale data, although this is a start
             // perhaps we could add an API for debugging that lets us pass in real pattern strings, but I'd like to stay away from that
-            new NameAndTestCases("locale=en_US,given=John,given2=Paul,surname=Smith,suffix=Jr.", new String[][] {
+            new NameAndTestCases("locale=en_US,given=John,given2=Paul,surname=Smith,generation=Jr.", new String[][] {
                 { "en_US", "LONG",   "REFERRING",  "FORMAL",   "",              "John Paul Smith Jr." },
             }),
             new NameAndTestCases("locale=en_US,given=John,given2=Paul,surname=Smith", new String[][] {
@@ -270,7 +274,7 @@ public class PersonNameFormatterTest extends TestFmwk{
             new NameAndTestCases("locale=en_US,given=John", new String[][] {
                 { "en_US", "LONG",   "REFERRING",  "FORMAL",   "",              "John" },
             }),
-            new NameAndTestCases("locale=en_US,given=John,suffix=Jr.", new String[][] {
+            new NameAndTestCases("locale=en_US,given=John,generation=Jr.", new String[][] {
                 { "en_US", "LONG",   "REFERRING",  "FORMAL",   "",              "John Jr." },
             }),
         }, false);
@@ -284,7 +288,7 @@ public class PersonNameFormatterTest extends TestFmwk{
             // in the right place.  This test checks to make sure we're using the right pattern based on which
             // fields are present in the actual name
             new NameAndTestCases("locale=es_ES,given=Andrés,given2=Manuel,surname=López,surname2=Obrador", new String[][] {
-                    { "es_ES", "LONG",   "REFERRING",  "FORMAL",   "",              "Andrés Manuel López Obrador" },
+                    { "es_ES", "LONG",   "REFERRING",  "FORMAL",   "",              "Andrés Manuel López" },
                     { "es_ES", "LONG",   "REFERRING",  "FORMAL",   "SORTING"    ,   "López Obrador, Andrés Manuel" },
             }),
             new NameAndTestCases("locale=es_ES,given=Andrés,given2=Manuel,surname=López", new String[][] {
@@ -353,9 +357,8 @@ public class PersonNameFormatterTest extends TestFmwk{
             // if the formatter locale doesn't use spaces and the name's locale doesn't either, just use
             // the native formatter
             new NameAndTestCases("locale=ja_JP,given=駿,surname=宮崎", new String[][] {
-                // (the Japanese name formatter actually inserts a space even for native names)
                 { "ja_JP", "LONG",   "REFERRING",  "FORMAL",   "",                "宮崎駿" },
-                { "zh_CN", "LONG",   "REFERRING",  "FORMAL",   "",                "宮崎駿" },
+                { "zh_CN", "LONG",   "REFERRING",  "FORMAL",   "",                "宮崎 駿" },
             }),
 
             // if the formatter locale doesn't use spaces and the name's locale does, use the name locale's formatter,
@@ -393,16 +396,16 @@ public class PersonNameFormatterTest extends TestFmwk{
     public void TestLiteralTextElision2() {
         // a more extensive text of the literal text elision logic
         PersonNameFormatter pnf = new PersonNameFormatter(Locale.US, new String[] {
-            "1{prefix}1 2{given}2 3{given2}3 4{surname}4 5{surname2}5 6{suffix}6"
+            "1{title}1 2{given}2 3{given2}3 4{surname}4 5{surname2}5 6{generation}6"
         });
 
         String[][] testCases = new String[][] {
-            { "locale=en_US,prefix=Dr.,given=Richard,given2=Theodore,surname=Gillam,surname2=Morgan,suffix=III", "1Dr.1 2Richard2 3Theodore3 4Gillam4 5Morgan5 6III6" },
-            { "locale=en_US,prefix=Mr.,given=Richard,given2=Theodore,surname=Gillam", "1Mr.1 2Richard2 3Theodore3 4Gillam" },
+            { "locale=en_US,title=Dr.,given=Richard,given2=Theodore,surname=Gillam,surname2=Morgan,generation=III", "1Dr.1 2Richard2 3Theodore3 4Gillam4 5Morgan5 6III6" },
+            { "locale=en_US,title=Mr.,given=Richard,given2=Theodore,surname=Gillam", "1Mr.1 2Richard2 3Theodore3 4Gillam" },
             { "locale=en_US,given=Richard,given2=Theodore,surname=Gillam",            "Richard2 3Theodore3 4Gillam" },
             { "locale=en_US,given=Richard,surname=Gillam",                            "Richard2 4Gillam" },
             { "locale=en_US,given=Richard",                                           "Richard" },
-            { "locale=en_US,prefix=Dr.,suffix=III",                                   "1Dr.1 6III6" }
+            { "locale=en_US,title=Dr.,generation=III",                                "1Dr.1 6III6" }
         };
 
         for (String[] testCase : testCases) {
@@ -418,18 +421,18 @@ public class PersonNameFormatterTest extends TestFmwk{
     public void TestPatternSelection() {
         // a more extensive test of the logic that selects an appropriate pattern when the formatter has more than one
         PersonNameFormatter pnf = new PersonNameFormatter(Locale.US, new String[] {
-            "A {prefix} {given} {given2} {surname} {surname2} {suffix}",
+            "A {title} {given} {given2} {surname} {surname2} {generation}",
             "B {given} {given2} {surname} {surname2}",
             "C {given} {surname}",
         });
 
         String[][] testCases = new String[][] {
-                { "locale=en_US,prefix=Dr.,given=Richard,given2=Theodore,surname=Gillam,surname2=Morgan,suffix=III", "A Dr. Richard Theodore Gillam Morgan III" },
-                { "locale=en_US,prefix=Mr.,given=Richard,given2=Theodore,surname=Gillam", "A Mr. Richard Theodore Gillam" },
+                { "locale=en_US,title=Dr.,given=Richard,given2=Theodore,surname=Gillam,surname2=Morgan,generation=III", "A Dr. Richard Theodore Gillam Morgan III" },
+                { "locale=en_US,title=Mr.,given=Richard,given2=Theodore,surname=Gillam", "A Mr. Richard Theodore Gillam" },
                 { "locale=en_US,given=Richard,given2=Theodore,surname=Gillam",            "B Richard Theodore Gillam" },
                 { "locale=en_US,given=Richard,surname=Gillam",                            "C Richard Gillam" },
                 { "locale=en_US,given=Richard",                                           "C Richard" },
-                { "locale=en_US,prefix=Dr.,suffix=III",                                   "A Dr. III" }
+                { "locale=en_US,title=Dr.,generation=III",                                "A Dr. III" }
         };
 
         for (String[] testCase : testCases) {
