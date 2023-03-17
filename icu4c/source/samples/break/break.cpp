@@ -105,7 +105,6 @@ int main()
     printf("Examining: ");
     printUnicodeString(stringToExamine);
     puts("");
-    exit(1);
 
     //print each sentence in forward and reverse order
     UErrorCode status = U_ZERO_ERROR;
