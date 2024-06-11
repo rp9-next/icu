@@ -42,6 +42,16 @@ jobs:
     - checkout: self
       lfs: true
       fetchDepth: 10
+    - powershell: |
+        $vcVersion = "14.39.33519"
+        $vcDir = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$vcVersion"
+        if (Test-Path $vcDir) {
+          Write-Host "Setting up MSVC environment for version $vcVersion"
+          & "$vcDir\bin\Hostx64\x64\vcvars64.bat"
+        } else {
+          Write-Error "MSVC version $vcVersion not found."
+        }
+      displayName: 'Set up MSVC Environment'
     - task: VSBuild@1
       displayName: 'Build Solution'
       inputs:
