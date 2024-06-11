@@ -42,6 +42,10 @@ jobs:
     - checkout: self
       lfs: true
       fetchDepth: 10
+      - script: |
+          $vcVersion = "14.39.33519"
+          dir C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$vcVersion
+        displayName: 'List Files and Folders in C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$vcVersion'
     - powershell: |
         $vcVersion = "14.39.33519"
         $vcDir = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\$vcVersion"
