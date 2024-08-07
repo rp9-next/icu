@@ -106,6 +106,12 @@ jobs:
         run: |
           cd icu4c;
           source/test/hdrtst/testtagsguards.sh;
+      - name: Test C Default locale
+        run: |
+          cd icu4c/source/test/cintltst && LANG=C LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestCDefaultLocale
+      - name: Test C.UTF-8 Default locale
+        run: |
+          cd icu4c/source/test/cintltst && LANG=C.UTF-8 LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestCDefaultLocale
       - name: Make Dist
         env:
           CPPFLAGS: -DU_NO_DEFAULT_INCLUDE_UTF_HEADERS=1
@@ -239,6 +245,32 @@ jobs:
           INTLTEST_OPTS: utility/MultithreadTest
           CPPFLAGS: -fsanitize=thread
           LDFLAGS: -fsanitize=thread
+
+  # Clang Linux with data filter
+  clang-datafilter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Build ICU4C with clang
+        run: |
+          cd icu4c/source && \
+          ICU_DATA_FILTER_FILE=../../.github/data-filter.json ./runConfigureICU Linux/clang && \
+          make -j -l4.5 tests && \
+          \[ ! -d data/out/build/icudt66l/translit \] && \
+          (cd test/intltest && LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./intltest translit/TransliteratorTest/TestBasicTransliteratorEvenWithoutData) && \
+          (cd test/cintltst && LANG=C LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestEnglishExemplarCharacters /tsutil/cldrtest/TestCoverage)
+
+  # Clang Linux with CPP 17
+  clang-cpp17:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Build ICU4C with CPP 17
+        env:
+          CXXFLAGS: -std=c++17 -Winvalid-constexpr
+        run: |
+          cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux && make -j -l4.5 check
 
   # MacOS with clang
   macos-clang:
