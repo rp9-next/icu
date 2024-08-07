@@ -251,7 +251,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
       - name: Build ICU4C with clang
         run: |
           cd icu4c/source && \
@@ -270,7 +269,7 @@ jobs:
         env:
           CXXFLAGS: -std=c++17 -Winvalid-constexpr
         run: |
-          cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux && make -j -l4.5 check
+          cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
 
   # MacOS with clang
   macos-clang:
