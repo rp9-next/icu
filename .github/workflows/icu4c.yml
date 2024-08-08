@@ -75,6 +75,26 @@ jobs:
           make install;
           PATH=$PREFIX/bin:$PATH make -C test/hdrtst check
 
+  #gcc 11 with c++ 20
+  gcc11-cpp20:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install GCC-11
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt update
+          sudo apt install gcc-11 g++-11
+      - name: Build and Test
+        env:
+          CC: gcc-11
+          CXX: g++-11
+          CXXFLAGS: -std=c++20 -fext-numeric-literals
+        run: |
+          cd icu4c/source;
+          ./runConfigureICU Linux
+          make -j -l4.5 check;
+
   # clang release build with some options to enforce useful constraints.
   # Includes dependency checker on an in-source, optimized build.
   # Includes checking @draft etc. API tags vs. ifndef guards like
@@ -106,6 +126,12 @@ jobs:
         run: |
           cd icu4c;
           source/test/hdrtst/testtagsguards.sh;
+      - name: Test C Default locale
+        run: |
+          cd icu4c/source/test/cintltst && LANG=C LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestCDefaultLocale
+      - name: Test C.UTF-8 Default locale
+        run: |
+          cd icu4c/source/test/cintltst && LANG=C.UTF-8 LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestCDefaultLocale
       - name: Make Dist
         env:
           CPPFLAGS: -DU_NO_DEFAULT_INCLUDE_UTF_HEADERS=1
@@ -239,6 +265,72 @@ jobs:
           INTLTEST_OPTS: utility/MultithreadTest
           CPPFLAGS: -fsanitize=thread
           LDFLAGS: -fsanitize=thread
+
+  # Clang Linux with data filter
+  # Note: This job uses `make -j2` instead of `make -j -l4.5` because with more parallelism (PR #2456)
+  # this check became flaky. The build apparently was not done copying one or another .ucm file before
+  # calling makeconv for it, although the Makefile has appropriate dependencies.
+  clang-datafilter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Build ICU4C with clang
+        run: |
+          cd icu4c/source && \
+          ICU_DATA_FILTER_FILE=../../.github/data-filter.json ./runConfigureICU Linux/clang && \
+          make -j2 tests && \
+          \[ ! -d data/out/build/icudt66l/translit \] && \
+          (cd test/intltest && LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./intltest translit/TransliteratorTest/TestBasicTransliteratorEvenWithoutData) && \
+          (cd test/cintltst && LANG=C LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestEnglishExemplarCharacters /tsutil/cldrtest/TestCoverage)
+
+  # Clang Linux with CPP 17
+  clang-cpp17:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Build ICU4C with CPP 17
+        env:
+          CXXFLAGS: -std=c++17 -Winvalid-constexpr
+        run: |
+          cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
+
+  # Clang Linux with LANG: en_US@calendar=gregorian;hours=h12
+  clang-lang-with-extn-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Linux Clang - LANG has extension tags
+        env:
+          LANG: "en_US@calendar=gregorian;hours=h12"
+        run: |
+          cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
+
+  # Clang Linux 16 with CPP20 and treat warnings as errors 
+  clang16-cpp20-warning-as-errors:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx_flags: 
+          - '-std=c++20'
+          - '-std=c++20 -stdlib=libc++'
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install Clang-16
+        run: |
+          curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
+          sudo apt update
+          sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
+          clang++ -v
+      - name: Clang-16 build and Test (${{ matrix.cxx_flags }})
+        env:
+          CC: clang-16
+          CPPFLAGS: '-Werror -Wno-strict-prototypes -Wall -Wextra -Wextra-semi -Wundef -Wnon-virtual-dtor -Wsuggest-override -Wctad-maybe-unsupported'
+          CXX: clang++-16
+          CXXFLAGS: ${{ matrix.cxx_flags }}
+        run: |
+          cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
 
   # MacOS with clang
   macos-clang:
