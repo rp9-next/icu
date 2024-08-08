@@ -312,22 +312,23 @@ jobs:
       fail-fast: false
       matrix:
         cxx_flags: 
-          - "-std=c++20"
-          - "-std=c++20 -stdlib=libc++"
+          - '-std=c++20'
+          - '-std=c++20 -stdlib=libc++'
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Install Clang-16 $matrix
+      - name: Install Clang-16
         run: |
           curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
           sudo apt update
           sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
+          clang++ -v
       - name: Clang-16 build and Test (${{ matrix.cxx_flags }})
         env:
           CC: clang-16
-          CPPFLAGS: '-Werror -Wno-strict-prototypes'
+          CPPFLAGS: '-Werror -Wno-strict-prototypes -Wall -Wextra -Wextra-semi -Wundef -Wnon-virtual-dtor -Wsuggest-override -Wctad-maybe-unsupported'
           CXX: clang++-16
-          CXXFLAGS: ${{ matrix.cxx_flags }}'
+          CXXFLAGS: ${{ matrix.cxx_flags }}
         run: |
           cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
 
