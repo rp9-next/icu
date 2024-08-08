@@ -75,6 +75,27 @@ jobs:
           make install;
           PATH=$PREFIX/bin:$PATH make -C test/hdrtst check
 
+  #gcc 11 with c++ 20
+  gcc11-cpp20:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install GCC-11
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt update
+          sudo apt install gcc-11 g++-11
+      - name: Build and Test
+        env:
+          CC: gcc-11
+          CXX: g++-11
+          CXXFLAGS: -std=c++20 -fext-numeric-literals
+        run: |
+          cd icu4c/source;
+          ./runConfigureICU Linux
+          make -j -l4.5 check;
+          make -j -l4.5 install;
+
   # clang release build with some options to enforce useful constraints.
   # Includes dependency checker on an in-source, optimized build.
   # Includes checking @draft etc. API tags vs. ifndef guards like
@@ -271,6 +292,39 @@ jobs:
       - name: Build ICU4C with CPP 17
         env:
           CXXFLAGS: -std=c++17 -Winvalid-constexpr
+        run: |
+          cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
+
+  # Clang Linux with LANG: en_US@calendar=gregorian;hours=h12
+  clang-lang-with-extn-tags:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Linux Clang - LANG has extension tags
+        env:
+          LANG: "en_US@calendar=gregorian;hours=h12"
+        run: |
+          cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
+
+  clang16-cpp20-warning-as-errors:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cpplib: ["", "-stdlib=libc++"]
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Install Clang-16 $matrix
+        run: |
+          curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
+          sudo apt update
+          sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
+      - name: Clang-16 build and Test
+        env:
+          CC: clang-16
+          CPPFLAGS: '-Werror -Wno-strict-prototypes'
+          CXX: clang++-16
+          CXXFLAGS: '-std=c++20 ${{ matrix['cpplib'] }}'
         run: |
           cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
 
