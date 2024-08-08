@@ -64,19 +64,19 @@ jobs:
 # Moved to GHA: .github\workflows\icu4c.yml 
 # Job : gcc11-cpp20:
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang_Ubuntu_2004_LANG
+# - job: ICU4C_Clang_Ubuntu_2004_LANG
 # Moved to GHA: .github\workflows\icu4c.yml 
 # Job : clang-lang-with-extn-tags:
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang16_Ubuntu_2004_WarningsAsErrors
+# - job: ICU4C_Clang16_Ubuntu_2004_WarningsAsErrors
 # Moved to GHA: .github\workflows\icu4c.yml 
 # Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang16_Cpp20_Ubuntu_2004
+# - job: ICU4C_Clang16_Cpp20_Ubuntu_2004
 # Moved to GHA: .github\workflows\icu4c.yml 
 # Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang16_Cpp20_libcpp_Ubuntu_2004
+# - job: ICU4C_Clang16_Cpp20_libcpp_Ubuntu_2004
 # Moved to GHA: .github\workflows\icu4c.yml 
 # Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
