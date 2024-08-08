@@ -60,118 +60,25 @@ jobs:
         CC: gcc
         CXX: g++
 #-------------------------------------------------------------------------
-- job: ICU4C_GCC11_Cpp20_Ubuntu_2004
-  displayName: 'C: Linux GCC-11 C++20 (Ubuntu 20.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    - script: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt update
-        sudo apt install gcc-11 g++-11
-      displayName: 'Install GCC-11'
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: gcc-11
-        CXX: g++-11
-        CXXFLAGS: '-std=c++20 -fext-numeric-literals'
+# ICU4C_GCC11_Cpp20_Ubuntu_2004
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : gcc11-cpp20:
 #-------------------------------------------------------------------------
 - job: ICU4C_Clang_Ubuntu_2004_LANG
-  displayName: 'C: Linux Clang (Ubuntu 20.04) - LANG has extension tags'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: clang
-        CXX: clang++
-        LANG: "en_US@calendar=gregorian;hours=h12"
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang-lang-with-extn-tags:
 #-------------------------------------------------------------------------
 - job: ICU4C_Clang16_Ubuntu_2004_WarningsAsErrors
-  displayName: 'C: Linux Clang-16 WarningsAsErrors (Ubuntu 20.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    # Install Clang-16 from https://apt.llvm.org/
-    - script: |
-        curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
-        sudo apt update
-        sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
-      displayName: 'Install Clang-16'
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 tests
-      displayName: 'Build only (WarningsAsErrors)'
-      env:
-        CC: clang-16
-        CPPFLAGS: '-Werror -Wno-strict-prototypes -Wall -Wextra -Wextra-semi -Wundef -Wnon-virtual-dtor -Wsuggest-override -Wctad-maybe-unsupported'
-        CXX: clang++-16
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
 - job: ICU4C_Clang16_Cpp20_Ubuntu_2004
-  displayName: 'C: Linux Clang-16 C++20 (Ubuntu 20.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    # Install Clang-16 from https://apt.llvm.org/
-    - script: |
-        curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
-        sudo apt update
-        sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
-      displayName: 'Install Clang-16'
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: clang-16
-        CPPFLAGS: '-Werror -Wno-strict-prototypes'
-        CXX: clang++-16
-        CXXFLAGS: '-std=c++20'
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
 - job: ICU4C_Clang16_Cpp20_libcpp_Ubuntu_2004
-  displayName: 'C: Linux Clang-16 C++20 libc++ (Ubuntu 20.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    # Install Clang-16 from https://apt.llvm.org/
-    - script: |
-        curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
-        sudo apt update
-        sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
-      displayName: 'Install Clang-16'
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: clang-16
-        CPPFLAGS: '-Werror -Wno-strict-prototypes'
-        CXX: clang++-16
-        CXXFLAGS: '-std=c++20 -stdlib=libc++'
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
 # VS 2022 Builds
 #-------------------------------------------------------------------------
