@@ -344,28 +344,30 @@ jobs:
 #           PYTHON=python3 ./runConfigureICU MacOSX;
 #           make -j -l4.5 check
 
-  windows-msvc-debug:
+  windows-msvc:
     runs-on: windows-2022
     strategy:
       fail-fast: false
       matrix:
         include: 
-          - build: '/p:Configuration=Debug /p:Platform=x64'
-            test: 'x64 Debug'
-          - build: '/p:Configuration=Debug /p:Platform=Win32'
-            test: 'x86 Debug'
-          - build: '/p:Configuration=Release /p:Platform=x64 /p:LanguageStandard=stdcpplatest'
-            test: 'x64 Release'
+          - test_flags: 'x64 Debug'
+            build_flags: '/p:Configuration=Debug /p:Platform=x64'
+          - test_flags: 'x86 Debug'
+            build_flags: '/p:Configuration=Debug /p:Platform=Win32'
+          - test_flags: 'x64 Release'
+            build_flags: '/p:LanguageStandard=stdcpplatest /p:Configuration=Release /p:Platform=x64'
+          - test_flags: 'x64 Release'
+            build_flags: '/p:_HAS_EXCEPTIONS=0 /p:Configuration=Release /p:Platform=x64'
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
       - name: Build Solution
         run: |
-          msbuild icu4c/source/allinone/allinone.sln ${{ matrix.build }}
+          msbuild icu4c/source/allinone/allinone.sln ${{ matrix.build_flags }}
       - name: Run x64 Debug Tests (icucheck.bat)
         run: |
-          icu4c\source\allinone\icucheck.bat ${{ matrix.test }}
+          icu4c\source\allinone\icucheck.bat ${{ matrix.test_flags }}
 
 #   # Run ICU4C tests with stubdata.
 #   run-with-stubdata:
