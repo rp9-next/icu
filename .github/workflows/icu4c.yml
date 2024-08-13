@@ -383,6 +383,7 @@ jobs:
       run: icu4c/source/allinone/icucheck.bat x64 Release
     - name: "Run PowerShell: Distrelease script (x64)"
       run: |
+        ls -l
         icu4c/packaging/distrelease.ps1 -arch x64
       shell: pwsh
       working-directory: icu4c
