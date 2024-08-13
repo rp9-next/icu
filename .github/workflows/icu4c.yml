@@ -325,8 +325,9 @@ jobs:
           env:
             CC: clang-16
             CXX: clang++-16
+            CXXFLAGS: ${{ matrix.flags }}
           run: |
-            cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang CXXFLAGS="${{ matrix.flags }}" && make -j -l4.5 check
+            cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
 
   # MacOS with clang
   macos-clang:
