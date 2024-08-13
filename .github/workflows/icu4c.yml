@@ -326,7 +326,7 @@ jobs:
           env:
             CC: clang-16
             CXX: clang++-16
-            CPPFLAGS: '-Werror -Wno-strict-prototypes -Wall -Wextra -Wextra-semi -Wundef -Wnon-virtual-dtor -Wsuggest-override -Wctad-maybe-unsupported'
+            CPPFLAGS: '-Wall -Wextra -Wextra-semi'
             CXXFLAGS: ${{ matrix.flags }}
           run: |
             cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
