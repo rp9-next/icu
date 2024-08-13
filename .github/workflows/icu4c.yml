@@ -369,6 +369,29 @@ jobs:
         run: |
           icu4c\source\allinone\icucheck.bat ${{ matrix.test_flags }}
 
+  windows-dist-release:
+    name: 'C: MSVC 64-bit Release (VS 2022) + Distrelease'
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Set up MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Build Solution
+      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64
+    - name: Run Tests (icucheck.bat)
+      run: icu4c/source/allinone/icucheck.bat x64 Release
+    - name: "Run PowerShell: Distrelease script (x64)"
+      run: |
+        ./icu4c/packaging/distrelease.ps1 -arch x64
+      shell: pwsh
+      working-directory: icu4c
+    - name: "Publish x64 Artifacts: icu-windows.zip"
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ github.run_number }}_ICU4C_MSVC_x64_Release
+        path: icu4c/source/dist/icu-windows.zip
+
 #   # Run ICU4C tests with stubdata.
 #   run-with-stubdata:
 #     runs-on: ubuntu-latest
