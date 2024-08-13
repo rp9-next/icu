@@ -346,17 +346,26 @@ jobs:
 
   windows-msvc-debug:
     runs-on: windows-2022
-    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include: 
+          - build: '/p:Configuration=Debug /p:Platform=x64'
+            test: 'x64 Debug'
+          - build: '/p:Configuration=Debug /p:Platform=Win32'
+            test: 'x86 Debug'
+          - build: '/p:Configuration=Release /p:Platform=x64 /p:LanguageStandard=stdcpplatest'
+            test: 'x64 Release'
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
       - name: Build Solution
         run: |
-          msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Debug /p:Platform=x64
+          msbuild icu4c/source/allinone/allinone.sln ${{ matrix.build }}"
       - name: Run x64 Debug Tests (icucheck.bat)
         run: |
-          icu4c\source\allinone\icucheck.bat x64 Debug
+          icu4c\source\allinone\icucheck.bat ${{ matrix.test }}
 
 #   # Run ICU4C tests with stubdata.
 #   run-with-stubdata:
