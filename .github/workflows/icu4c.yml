@@ -389,23 +389,23 @@ jobs:
     - name: Extract ICU version and rename zip file
       run: |
         # Extract ICU version from icuver.txt
-        ICU_VERSION=$(grep 'ICUVersion' icu4c/source/data/misc/icuver.txt | sed 's/.*{"\([0-9]*\.[0-9]*\.[0-9]*\.[0-9]*\)".*/\1/')
-        MAJOR_VERSION=$(echo $ICU_VERSION | cut -d'.' -f1)
-        MINOR_VERSION=$(echo $ICU_VERSION | cut -d'.' -f2)
-
+        $icuverContent = Get-Content icuver.txt
+        $icuVersion = ($icuverContent -match 'ICUVersion{"(\d+\.\d+\.\d+\.\d+)"}')[1]
+        $majorVersion = $icuVersion.Split('.')[0]
+        $minorVersion = $icuVersion.Split('.')[1]
         # Determine the new file name based on the version
-        if [ "$MINOR_VERSION" -eq "0" ]; then
-          NEW_ZIP_NAME="icu4c-${MAJOR_VERSION}rc-Win64-MSVC2022.zip"
-        else
-          NEW_ZIP_NAME="icu4c-${MAJOR_VERSION}_${MINOR_VERSION}-Win64-MSVC2022.zip"
-        fi
+        if ($minorVersion -eq "0") {
+          $newZipName = "icu4c-$majorVersion`rc-Win64-MSVC2022.zip"
+        } else {
+          $newZipName = "icu4c-$majorVersion`_$minorVersion-Win64-MSVC2022.zip"
+        }
         # Rename the existing zip file
-        mv icu4c/source/dist/icu-windows.zip icu4c/source/dist/$NEW_ZIP_NAME
+        Rename-Item -Path icu-windows.zip -NewName $newZipName
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: $NEW_ZIP_NAME
-        path: icu4c/source/dist/$NEW_ZIP_NAME
+        name: $newZipName
+        path: icu4c/source/dist/$newZipName
 
   windows-datadilter:
     name: 'C: MSVC 64-bit Release DataFilter (VS 2022)'
