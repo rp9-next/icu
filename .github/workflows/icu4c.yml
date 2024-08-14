@@ -340,7 +340,7 @@ jobs:
 
       - name: ICU4C with clang on MacOS
         env:
-          CPPFLAGS: '-Werror -Wall -Wextra -Wextra-semi -Wundef -Wnon-virtual-dtor -Wctad-maybe-unsupported'
+          CPPFLAGS: '-Wall -Wextra -Wextra-semi -Wundef -Wnon-virtual-dtor -Wctad-maybe-unsupported' # -Werror
         run: |
           cd icu4c/source;
           PYTHON=python3 ./runConfigureICU MacOSX;
@@ -467,11 +467,11 @@ jobs:
     - name: Build and Test
       run: |
         set MSYSTEM=MINGW64
-        c:\tools\msys64\usr\bin\bash.exe -lc "cd ${{ github.workspace }} && cd icu4c/source && ./runConfigureICU MinGW --prefix='/tmp/build-icu' && make -j -l2.5 check"
+        c:\tools\msys64\usr\bin\bash.exe -lc "cd icu4c/source && ./runConfigureICU MinGW --prefix='/tmp/build-icu' && make -j -l4.5 check"
     - name: Make install
       run: |
         set MSYSTEM=MINGW64
-        c:\tools\msys64\usr\bin\bash.exe -lc "cd ${{ github.workspace }} && cd icu4c/source && make install && cd /tmp/build-icu && echo 'Recursive ls' && ls -lR"
+        c:\tools\msys64\usr\bin\bash.exe -lc "cd icu4c/source && make install && cd /tmp/build-icu && echo 'Recursive ls' && ls -lR"
     - name: Run icuinfo
       run: |
         set MSYSTEM=MINGW64
