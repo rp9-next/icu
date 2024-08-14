@@ -445,7 +445,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ steps.set-zip-name.outputs.newZipName }}
+        name: icu4c.${{ matrix.win_ver }}.run_#${{ github.run_number }}
         path: icu4c/source/dist/${{ steps.set-zip-name.outputs.newZipName }}.zip
 
   windows-msys2-gcc-x86_64:
@@ -456,7 +456,6 @@ jobs:
     - name: Install MSYS2
       run: |
         choco install -y msys2
-        rem refreshenv
     - name: Install mingw-w64-x86_64-toolchain
       run: |
         c:\tools\msys64\usr\bin\bash.exe -lc "echo 'Hello World' && uname -a"
