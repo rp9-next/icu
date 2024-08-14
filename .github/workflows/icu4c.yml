@@ -373,18 +373,29 @@ jobs:
     name: 'C: MSVC 64-bit Release (VS 2022) + Distrelease'
     runs-on: windows-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include: 
+          - arch: 'x64'
+            plat: 'x64'
+            win_ver: 'Win64'
+          - arch: 'x86'
+            plat: 'Win32'
+            win_ver: 'Win32'
+        
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v2
     - name: Build Solution
-      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64
+      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=${{ matrix.plat }}
     - name: Run Tests (icucheck.bat)
-      run: icu4c/source/allinone/icucheck.bat x64 Release
-    - name: "Run PowerShell: Distrelease script (x64)"
+      run: icu4c/source/allinone/icucheck.bat ${{ matrix.arch }} Release
+    - name: "Run PowerShell: Distrelease script (${{ matrix.arch }})"
       run: |
         cd ./icu4c/
-        ./packaging/distrelease.ps1 -arch x64
+        ./packaging/distrelease.ps1 -arch ${{ matrix.arch }}
       shell: pwsh
     - name: Extract ICU version and rename zip file
       run: |
@@ -397,19 +408,19 @@ jobs:
         $minorVersion = $icuVersion.Split('.')[1]
         # Determine the new file name based on the version
         if ($minorVersion -eq "0") {
-          $newZipName = "icu4c-$majorVersion`rc-Win64-MSVC2022.zip"
+          $newZipName = "icu4c-$majorVersion`rc-${{ matrix.win_ver }}-MSVC2022.zip"
         } else {
-          $newZipName = "icu4c-$majorVersion`_$minorVersion-Win64-MSVC2022.zip"
+          $newZipName = "icu4c-$majorVersion`_$minorVersion-${{ matrix.win_ver }}-MSVC2022.zip"
         }
         # Rename the existing zip file
-        Rename-Item -Path icu\source\dist\icu-windows.zip -NewName icu\source\dist\$newZipName
+        Rename-Item -Path source\dist\icu-windows.zip -NewName source\dist\$newZipName
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: $newZipName
         path: icu4c/source/dist/$newZipName
 
-  windows-datadilter:
+  windows-datafilter:
     name: 'C: MSVC 64-bit Release DataFilter (VS 2022)'
     runs-on: windows-latest
     timeout-minutes: 30
