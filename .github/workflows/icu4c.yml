@@ -383,16 +383,31 @@ jobs:
       run: icu4c/source/allinone/icucheck.bat x64 Release
     - name: "Run PowerShell: Distrelease script (x64)"
       run: |
-        ls -l .
-        ls -l ./lib64
-        ls -l ./bin64
-        ./icu4c/packaging/distrelease.ps1 -arch x64
+        cd ./icu4c/
+        ./packaging/distrelease.ps1 -arch x64
       shell: pwsh
     - name: "Publish x64 Artifacts: icu-windows.zip"
       uses: actions/upload-artifact@v2
       with:
         name: ${{ github.run_number }}_ICU4C_MSVC_x64_Release
         path: icu4c/source/dist/icu-windows.zip
+
+  windows-datadilter:
+    name: 'C: MSVC 64-bit Release DataFilter (VS 2022)'
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Set ICU_DATA_FILTER_FILE variable
+      run: |
+        $filterPath = "${{ github.workspace }}\.github\data-filter.json"
+        echo "ICU_DATA_FILTER_FILE=$filterPath" >> $GITHUB_ENV
+      shell: pwsh
+    - name: Set up MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Build Solution with Data Filter
+      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64 /p:SkipUWP=true
 
 #   # Run ICU4C tests with stubdata.
 #   run-with-stubdata:
