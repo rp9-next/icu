@@ -402,7 +402,7 @@ jobs:
           $newZipName = "icu4c-$majorVersion`_$minorVersion-Win64-MSVC2022.zip"
         }
         # Rename the existing zip file
-        Rename-Item -Path icu\source\dist\icu-windows.zip -NewName $newZipName
+        Rename-Item -Path icu\source\dist\icu-windows.zip -NewName icu\source\dist\$newZipName
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
@@ -434,11 +434,8 @@ jobs:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v2
-    - name: Download x64 Release Build Artifacts
-      uses: actions/download-artifact@v2
-      with:
-        name: x64-release-build
-        path: path/to/download/artifacts
+    - name: Build Solution x64
+      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64
     - name: Build Solution ARM32
       run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=ARM
 
