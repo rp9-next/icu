@@ -396,9 +396,9 @@ jobs:
         $minorVersion = $icuVersion.Split('.')[1]
         # Determine the new file name based on the version
         if ($minorVersion -eq "0") {
-          $newZipName = "icu4c-$majorVersion`rc-${{ matrix.win_ver }}-MSVC2022.zip"
+          $newZipName = "icu4c-${majorVersion}rc-${{ matrix.win_ver }}-MSVC2022.zip"
         } else {
-          $newZipName = "icu4c-$majorVersion`_$minorVersion-${{ matrix.win_ver }}-MSVC2022.zip"
+          $newZipName = "icu4c-${majorVersion}_${minorVersion}-${{ matrix.win_ver }}-MSVC2022.zip"
         }
         # Rename the existing zip file
         echo $newZipName
