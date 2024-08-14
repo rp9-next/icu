@@ -389,7 +389,7 @@ jobs:
     - name: Extract ICU version and rename zip file
       run: |
         # Extract ICU version from icuver.txt
-        $icuverContent = Get-Content icuver.txt
+        $icuverContent = Get-Content icu4c\source\data\misc\icuver.txt
         $icuVersion = ($icuverContent -match 'ICUVersion{"(\d+\.\d+\.\d+\.\d+)"}')[1]
         $majorVersion = $icuVersion.Split('.')[0]
         $minorVersion = $icuVersion.Split('.')[1]
