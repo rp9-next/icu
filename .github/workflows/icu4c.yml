@@ -402,7 +402,7 @@ jobs:
           $newZipName = "icu4c-$majorVersion`_$minorVersion-Win64-MSVC2022.zip"
         }
         # Rename the existing zip file
-        Rename-Item -Path icu-windows.zip -NewName $newZipName
+        Rename-Item -Path icu\source\dist\icu-windows.zip -NewName $newZipName
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
