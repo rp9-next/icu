@@ -445,7 +445,7 @@ jobs:
         ls -l .
         echo "::set-output name=newZipName::$newZipName"
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: icu4c.${{ matrix.win_ver }}.run_#${{ github.run_number }}
         path: icu4c/source/dist/${{ steps.set-zip-name.outputs.newZipName }}.zip
@@ -467,7 +467,7 @@ jobs:
     - name: Build and Test
       run: |
         set MSYSTEM=MINGW64
-        c:\tools\msys64\usr\bin\bash.exe -lc "export PATH=$PATH:/mingw64/bin && cd '${{ github.workspace }}' && cd icu4c/source && ./runConfigureICU MinGW --prefix='/tmp/build-icu' && make -j -l4.5 check"
+        c:\tools\msys64\usr\bin\bash.exe -lc "export PATH=\$PATH:/mingw64/bin && cd '${{ github.workspace }}' && cd icu4c/source && ./runConfigureICU MinGW --prefix='/tmp/build-icu' && make -j -l4.5 check"
     - name: Make install
       run: |
         set MSYSTEM=MINGW64
