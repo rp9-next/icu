@@ -383,6 +383,9 @@ jobs:
       run: icu4c/source/allinone/icucheck.bat x64 Release
     - name: "Run PowerShell: Distrelease script (x64)"
       run: |
+        ls -l .
+        ls -l ./lib64
+        ls -l ./bin64
         ./icu4c/packaging/distrelease.ps1 -arch x64
       shell: pwsh
     - name: "Publish x64 Artifacts: icu-windows.zip"
