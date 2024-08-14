@@ -434,9 +434,11 @@ jobs:
         } else {
           $newZipName = "icu4c-${majorVersion}_${minorVersion}-${{ matrix.win_ver }}-MSVC2022"
         }
+        # Debugging: Print the new zip name
+        Write-Host "New Zip Name: $newZipName"
         # Rename the existing zip file
         cd icu4c\source\dist\ && ls -l .
-        Rename-Item -Path icu-windows.zip -NewName ${newZipName}.zip
+        Rename-Item -Path icu-windows.zip -NewName "${newZipName}.zip"
         echo $newZipName
         ls -l .
         echo "::set-output name=newZipName::$newZipName"
