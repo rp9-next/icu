@@ -354,6 +354,8 @@ jobs:
             build_flags: '/p:Configuration=Debug /p:Platform=x64'
           - test_flags: 'x86 Debug'
             build_flags: '/p:Configuration=Debug /p:Platform=Win32'
+          - test_flags: 'arm Release'
+            build_flags: '/p:Configuration=Release /p:Platform=ARM'
           - test_flags: 'x64 Release'
             build_flags: '/p:LanguageStandard=stdcpplatest /p:Configuration=Release /p:Platform=x64'
           - test_flags: 'x64 Release'
@@ -362,12 +364,32 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
+      - name: Build Solution x64
+        if: ${{ matrix.test_flags }} == 'arm Release'
+        run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64
       - name: Build Solution
         run: |
           msbuild icu4c/source/allinone/allinone.sln ${{ matrix.build_flags }}
-      - name: Run x64 Debug Tests (icucheck.bat)
+      - name: Run ${{ matrix.test_flags }} Tests (icucheck.bat)
+        if: ${{ matrix.test_flags }} != 'arm Release'
         run: |
           icu4c\source\allinone\icucheck.bat ${{ matrix.test_flags }}
+
+  windows-msvc-datafilter:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Set ICU_DATA_FILTER_FILE variable
+      run: |
+        $filterPath = "${{ github.workspace }}\.github\data-filter.json"
+        echo "ICU_DATA_FILTER_FILE=$filterPath" >> $GITHUB_ENV
+      shell: pwsh
+    - name: Set up MSBuild
+      uses: microsoft/setup-msbuild@v2
+    - name: Build Solution with Data Filter
+      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64 /p:SkipUWP=true
 
   windows-msvc-dist-release:
     runs-on: windows-latest
@@ -385,23 +407,6 @@ jobs:
         
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-    - name: Validate
-      run: |
-        # Extract ICU version from icuver.txt
-        $icuverContent = Get-Content icu4c\source\data\misc\icuver.txt
-        $icuVersion = ($icuverContent -match 'ICUVersion{"(\d+\.\d+\.\d+\.\d+)"}')[0]
-        $icuVersion -match '\{"(.*?)"\}' | Out-Null
-        $icuVersion = $matches[1]
-        $majorVersion = $icuVersion.Split('.')[0]
-        $minorVersion = $icuVersion.Split('.')[1]
-        # Determine the new file name based on the version
-        if ($minorVersion -eq "0") {
-          $newZipName = "icu4c-${majorVersion}rc-${{ matrix.win_ver }}-MSVC2022.zip"
-        } else {
-          $newZipName = "icu4c-${majorVersion}_${minorVersion}-${{ matrix.win_ver }}-MSVC2022.zip"
-        }
-        # Rename the existing zip file
-        echo $newZipName
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v2
     - name: Build Solution
@@ -424,9 +429,9 @@ jobs:
         $minorVersion = $icuVersion.Split('.')[1]
         # Determine the new file name based on the version
         if ($minorVersion -eq "0") {
-          $newZipName = "icu4c-$majorVersion`rc-${{ matrix.win_ver }}-MSVC2022.zip"
+          $newZipName = "icu4c-${majorVersion}rc-${{ matrix.win_ver }}-MSVC2022.zip"
         } else {
-          $newZipName = "icu4c-$majorVersion`_$minorVersion-${{ matrix.win_ver }}-MSVC2022.zip"
+          $newZipName = "icu4c-${majorVersion}_${minorVersion}-${{ matrix.win_ver }}-MSVC2022.zip"
         }
         # Rename the existing zip file
         echo $newZipName
@@ -437,34 +442,6 @@ jobs:
       with:
         name: $newZipName
         path: icu4c/source/dist/$newZipName
-
-  windows-msvc-datafilter:
-    runs-on: windows-latest
-    timeout-minutes: 30
-
-    steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-    - name: Set ICU_DATA_FILTER_FILE variable
-      run: |
-        $filterPath = "${{ github.workspace }}\.github\data-filter.json"
-        echo "ICU_DATA_FILTER_FILE=$filterPath" >> $GITHUB_ENV
-      shell: pwsh
-    - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v2
-    - name: Build Solution with Data Filter
-      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64 /p:SkipUWP=true
-
-  windows-msvc-arm:
-    runs-on: windows-latest
-    timeout-minutes: 35
-    steps:
-    - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-    - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v2
-    - name: Build Solution x64
-      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64
-    - name: Build Solution ARM32
-      run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=ARM
 
 #   # Run ICU4C tests with stubdata.
 #   run-with-stubdata:
