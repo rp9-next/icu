@@ -390,7 +390,9 @@ jobs:
       run: |
         # Extract ICU version from icuver.txt
         $icuverContent = Get-Content icu4c\source\data\misc\icuver.txt
-        $icuVersion = ($icuverContent -match 'ICUVersion{"(\d+\.\d+\.\d+\.\d+)"}')[1]
+        $icuVersion = ($icuverContent -match 'ICUVersion{"(\d+\.\d+\.\d+\.\d+)"}')[0]
+        $icuVersion -match '\{"(.*?)"\}' | Out-Null
+        $icuVersion = $matches[1]
         $majorVersion = $icuVersion.Split('.')[0]
         $minorVersion = $icuVersion.Split('.')[1]
         # Determine the new file name based on the version
@@ -427,10 +429,16 @@ jobs:
   windows-msvc-arm:
     runs-on: windows-latest
     timeout-minutes: 35
+    needs: windows-dist-release
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v2
+    - name: Download x64 Release Build Artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: x64-release-build
+        path: path/to/download/artifacts
     - name: Build Solution ARM32
       run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=ARM
 
