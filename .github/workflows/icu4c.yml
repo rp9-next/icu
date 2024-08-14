@@ -412,6 +412,7 @@ jobs:
           $newZipName = "icu4c-$majorVersion`_$minorVersion-${{ matrix.win_ver }}-MSVC2022.zip"
         }
         # Rename the existing zip file
+        echo $newZipName
         cd icu4c\source\dist\ && ls -l .
         Rename-Item -Path icu-windows.zip -NewName $newZipName
     - name: Upload artifact
