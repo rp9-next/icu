@@ -385,6 +385,23 @@ jobs:
         
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+    - name: Validate
+      run: |
+        # Extract ICU version from icuver.txt
+        $icuverContent = Get-Content icu4c\source\data\misc\icuver.txt
+        $icuVersion = ($icuverContent -match 'ICUVersion{"(\d+\.\d+\.\d+\.\d+)"}')[0]
+        $icuVersion -match '\{"(.*?)"\}' | Out-Null
+        $icuVersion = $matches[1]
+        $majorVersion = $icuVersion.Split('.')[0]
+        $minorVersion = $icuVersion.Split('.')[1]
+        # Determine the new file name based on the version
+        if ($minorVersion -eq "0") {
+          $newZipName = "icu4c-$majorVersion`rc-${{ matrix.win_ver }}-MSVC2022.zip"
+        } else {
+          $newZipName = "icu4c-$majorVersion`_$minorVersion-${{ matrix.win_ver }}-MSVC2022.zip"
+        }
+        # Rename the existing zip file
+        echo $newZipName
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v2
     - name: Build Solution
