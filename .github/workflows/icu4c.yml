@@ -464,10 +464,14 @@ jobs:
         c:\tools\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S mingw-w64-x86_64-toolchain"
         c:\tools\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S make"
         exit
+    - name: 'Add MinGW to PATH'
+      run: c:\tools\msys64\usr\bin\bash.exe -lc 'echo "C:\tools\msys64\mingw64\bin" >> $GITHUB_PATH'
+    - name: 'Verify MinGW Installation'
+      run: c:\tools\msys64\usr\bin\bash.exe -lc 'gcc --version'
     - name: Build and Test
       run: |
         set MSYSTEM=MINGW64
-        c:\tools\msys64\usr\bin\bash.exe -lc "export PATH=\$PATH:/mingw64/bin && cd '${{ github.workspace }}' && cd icu4c/source && ./runConfigureICU MinGW --prefix='/tmp/build-icu' && make -j -l4.5 check"
+        c:\tools\msys64\usr\bin\bash.exe -lc "cd '${{ github.workspace }}' && cd icu4c/source && ./runConfigureICU MinGW --prefix='/tmp/build-icu' && make -j -l4.5 check"
     - name: Make install
       run: |
         set MSYSTEM=MINGW64
