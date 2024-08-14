@@ -365,13 +365,13 @@ jobs:
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
       - name: Build Solution x64
-        if: ${{ matrix.test_flags }} == 'arm Release'
+        if: contains(matrix.test_flags, 'arm Release')
         run: msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x64
       - name: Build Solution
         run: |
           msbuild icu4c/source/allinone/allinone.sln ${{ matrix.build_flags }}
       - name: Run ${{ matrix.test_flags }} Tests (icucheck.bat)
-        if: ${{ matrix.test_flags }} != 'arm Release'
+        if: contains(matrix.test_flags, 'arm Release') == false
         run: |
           icu4c\source\allinone\icucheck.bat ${{ matrix.test_flags }}
 
@@ -419,6 +419,7 @@ jobs:
         ./packaging/distrelease.ps1 -arch ${{ matrix.arch }}
       shell: pwsh
     - name: Extract ICU version and rename zip file
+      id: set-zip-name
       run: |
         # Extract ICU version from icuver.txt
         $icuverContent = Get-Content icu4c\source\data\misc\icuver.txt
@@ -434,14 +435,16 @@ jobs:
           $newZipName = "icu4c-${majorVersion}_${minorVersion}-${{ matrix.win_ver }}-MSVC2022.zip"
         }
         # Rename the existing zip file
-        echo $newZipName
         cd icu4c\source\dist\ && ls -l .
         Rename-Item -Path icu-windows.zip -NewName $newZipName
+        echo $newZipName
+        ls -l .
+        echo "::set-output name=newZipName::$newZipName"
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
-        name: $newZipName
-        path: icu4c/source/dist/$newZipName
+        name: ${{ steps.set-zip-name.outputs.newZipName }}
+        path: icu4c/source/dist/${{ steps.set-zip-name.outputs.newZipName }}
 
 #   # Run ICU4C tests with stubdata.
 #   run-with-stubdata:
