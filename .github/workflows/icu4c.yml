@@ -369,8 +369,7 @@ jobs:
         run: |
           icu4c\source\allinone\icucheck.bat ${{ matrix.test_flags }}
 
-  windows-dist-release:
-    name: 'C: MSVC 64-bit Release (VS 2022) + Distrelease'
+  windows-msvc-dist-release:
     runs-on: windows-latest
     timeout-minutes: 30
     strategy:
@@ -413,15 +412,15 @@ jobs:
           $newZipName = "icu4c-$majorVersion`_$minorVersion-${{ matrix.win_ver }}-MSVC2022.zip"
         }
         # Rename the existing zip file
-        Rename-Item -Path source\dist\icu-windows.zip -NewName source\dist\$newZipName
+        cd icu4c\source\dist\ && ls -l .
+        Rename-Item -Path icu-windows.zip -NewName $newZipName
     - name: Upload artifact
       uses: actions/upload-artifact@v2
       with:
         name: $newZipName
         path: icu4c/source/dist/$newZipName
 
-  windows-datafilter:
-    name: 'C: MSVC 64-bit Release DataFilter (VS 2022)'
+  windows-msvc-datafilter:
     runs-on: windows-latest
     timeout-minutes: 30
 
@@ -440,7 +439,6 @@ jobs:
   windows-msvc-arm:
     runs-on: windows-latest
     timeout-minutes: 35
-    needs: windows-dist-release
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Set up MSBuild
