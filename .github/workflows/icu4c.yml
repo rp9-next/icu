@@ -457,7 +457,7 @@ jobs:
         path: icu4c/source/dist/${{ steps.set-zip-name.outputs.newZipName }}.zip
 
   windows-msys2-gcc-x86_64:
-    runs-on: windows-2019
+    runs-on: windows-latest
     timeout-minutes: 45
     defaults:
       run:
@@ -835,7 +835,7 @@ jobs:
 
   icu4c-icuexportdata:
     name: Create Artifacts from icuexportdata
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
