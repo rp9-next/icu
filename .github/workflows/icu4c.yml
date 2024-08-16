@@ -473,9 +473,10 @@ jobs:
         C:\tools\msys64\usr\bin\bash.exe -lc "echo 'export PATH=/mingw64/bin:\$PATH' >> ~/.bashrc"
         C:\tools\msys64\usr\bin\bash.exe -lc "source ~/.bashrc"
         c:\tools\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S make"
-        exit
     - name: 'Add MinGW to PATH'
-      run: c:\tools\msys64\usr\bin\bash.exe -lc 'echo "C:\tools\msys64\mingw64\bin" >> $GITHUB_PATH'
+      run: |
+        echo "C:\tools\msys64\mingw64\bin" >> $GITHUB_PATH
+        echo "C:\tools\msys64\usr\bin" >> $GITHUB_PATH
     - name: 'Verify MinGW Installation'
       run: c:\tools\msys64\usr\bin\bash.exe -lc 'gcc --version'
     - name: Build and Test
@@ -833,3 +834,74 @@ jobs:
 #           mkdir -p lib
 #           pushd common && make -j -l4.5 && popd
 #           pushd i18n && make -j -l4.5 && popd
+
+
+  icu4c-icuexportdata:
+    name: Create Artifacts from icuexportdata
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Build
+        run: |
+          cd icu4c/source && ./runConfigureICU Linux && make -j -l4.5
+        env:
+          CC: clang
+          CXX: clang++
+      - name: Build property data files
+        run: |
+          cd icu4c/source
+          mkdir -p icuexportdata/uprops/fast
+          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/fast --trie-type fast --all
+          mkdir -p icuexportdata/uprops/small
+          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/small --trie-type small --all
+        env:
+          LD_LIBRARY_PATH: lib
+      - name: Build normalization data files
+        run: |
+          cd icu4c/source
+          mkdir -p icuexportdata/norm/fast
+          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/fast --trie-type fast --all
+          mkdir -p icuexportdata/norm/small
+          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/small --trie-type small --all
+        env:
+          LD_LIBRARY_PATH: lib
+      - name: Build case data files
+        run: |
+          cd icu4c/source
+          mkdir -p icuexportdata/ucase/fast
+          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/fast --trie-type fast --all
+          mkdir -p icuexportdata/ucase/small
+          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/small --trie-type small --all
+        env:
+          LD_LIBRARY_PATH: lib
+      - name: Build collation data files
+        run: |
+          cd icu4c/source
+          FILES=$(ls data/coll/*.txt)
+          mkdir -p icuexportdata/collation/unihan
+          ./bin/genrb -X -s data/coll/ --ucadata data/in/coll/ucadata-unihan-icu4x.icu -d icuexportdata/collation/unihan $FILES
+          rm icuexportdata/collation/unihan/*.res
+          mkdir -p icuexportdata/collation/implicithan
+          ./bin/genrb -X -s data/coll/ --ucadata data/in/coll/ucadata-implicithan-icu4x.icu -d icuexportdata/collation/implicithan $FILES
+          rm icuexportdata/collation/implicithan/*.res
+        env:
+          LD_LIBRARY_PATH: lib
+      - name: Build segmenter dictionary files
+        run: |
+          cd icu4c/source
+          mkdir -p icuexportdata/segmenter/dictionary
+          for FILE in $(ls data/brkitr/dictionaries); do
+            ./bin/gendict --uchars --toml data/brkitr/dictionaries/$FILE icuexportdata/segmenter/dictionary/$(basename $FILE .txt).toml
+          done
+        env:
+          LD_LIBRARY_PATH: lib
+      - name: Zip
+        run: |
+          zip -r icuexportdata_tag-goes-here.zip icu4c/source/icuexportdata
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: icuexportdata_output
+          path: icuexportdata_tag-goes-here.zip
