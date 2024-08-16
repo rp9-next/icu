@@ -841,67 +841,58 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Build
-        shell: bash -euxo pipefail {0}
         run: |
           cd icu4c/source && ./runConfigureICU Linux && make -j -l4.5
         env:
           CC: clang
           CXX: clang++
       - name: Build property data files
-        shell: bash -euxo pipefail {0}
         run: |
-          set -e
           cd icu4c/source
           mkdir -p icuexportdata/uprops/fast
-          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/fast --trie-type fast --all || exit 1
+          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/fast --trie-type fast --all
           mkdir -p icuexportdata/uprops/small
-          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/small --trie-type small --all || exit 1
+          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/small --trie-type small --all
         env:
           LD_LIBRARY_PATH: lib
       - name: Build normalization data files
-        shell: bash -euxo pipefail {0}
         run: |
-          set -e
           cd icu4c/source
           mkdir -p icuexportdata/norm/fast
-          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/fast --trie-type fast --all || exit 1
+          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/fast --trie-type fast --all
           mkdir -p icuexportdata/norm/small
-          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/small --trie-type small --all || exit 1
+          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/small --trie-type small --all
         env:
           LD_LIBRARY_PATH: lib
       - name: Build case data files
-        shell: bash -euxo pipefail {0}
         run: |
-          set -e
           cd icu4c/source
           mkdir -p icuexportdata/ucase/fast
-          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/fast --trie-type fast --all || exit 1
+          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/fast --trie-type fast --all
           mkdir -p icuexportdata/ucase/small
-          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/small --trie-type small --all || exit 1
+          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/small --trie-type small --all
         env:
           LD_LIBRARY_PATH: lib
       - name: Build collation data files
-        shell: bash -euxo pipefail {0}
         run: |
-          set -e
           cd icu4c/source
-          FILES=$(ls data/coll/*.txt)
+          cd data/coll
+          FILES=$(ls *.txt)
+          cd ../../
           mkdir -p icuexportdata/collation/unihan
-          ./bin/genrb -X -s ./ --ucadata data/in/coll/ucadata-unihan-icu4x.icu -d icuexportdata/collation/unihan $FILES || exit 1
+          ./bin/genrb -X -s data/coll --ucadata data/in/coll/ucadata-unihan-icu4x.icu -d icuexportdata/collation/unihan $FILES
           rm icuexportdata/collation/unihan/*.res
           mkdir -p icuexportdata/collation/implicithan
-          ./bin/genrb -X -s ./ --ucadata data/in/coll/ucadata-implicithan-icu4x.icu -d icuexportdata/collation/implicithan $FILES || exit 1
+          ./bin/genrb -X -s data/coll --ucadata data/in/coll/ucadata-implicithan-icu4x.icu -d icuexportdata/collation/implicithan $FILES
           rm icuexportdata/collation/implicithan/*.res
         env:
           LD_LIBRARY_PATH: lib
       - name: Build segmenter dictionary files
-        shell: bash -euxo pipefail {0}
         run: |
-          set -e
           cd icu4c/source
           mkdir -p icuexportdata/segmenter/dictionary
           for FILE in $(ls data/brkitr/dictionaries); do
-            ./bin/gendict --uchars --toml data/brkitr/dictionaries/$FILE icuexportdata/segmenter/dictionary/$(basename $FILE .txt).toml ||exit 1
+            ./bin/gendict --uchars --toml data/brkitr/dictionaries/$FILE icuexportdata/segmenter/dictionary/$(basename $FILE .txt).toml
           done
         env:
           LD_LIBRARY_PATH: lib
