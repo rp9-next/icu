@@ -466,6 +466,7 @@ jobs:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Set up MSYS2
       uses: msys2/setup-msys2@v2
+      id: msys2
       with:
         update: true
         msystem: mingw64
@@ -487,7 +488,7 @@ jobs:
     - name: Run icuinfo from CMD
       shell: cmd
       run: |
-        cd /d C:\tools\msys64\tmp\build-icu\bin
+        cd /d ${{ steps.msys2.outputs.msys2-location }}\tmp\build-icu\bin
         set PATH=C:\tools\msys64\mingw64\bin;%PATH%
         .\icuinfo.exe
 
@@ -891,7 +892,7 @@ jobs:
         run: |
           cd icu4c/source
           mkdir -p icuexportdata/segmenter/dictionary
-          for FILE in $(ls data/brkitr/dictionaries); do
+          for FILE in $(ls data/brkitr/dictionaries | xargs -n 1 basename); do
             ./bin/gendict --uchars --toml data/brkitr/dictionaries/$FILE icuexportdata/segmenter/dictionary/$(basename $FILE .txt).toml
           done
         env:
@@ -900,7 +901,7 @@ jobs:
         run: |
           zip -r icuexportdata_tag-goes-here.zip icu4c/source/icuexportdata
       - name: Publish Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: icuexportdata_output
           path: icuexportdata_tag-goes-here.zip
