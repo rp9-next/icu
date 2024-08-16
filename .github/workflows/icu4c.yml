@@ -449,7 +449,7 @@ jobs:
         Rename-Item -Path icu-windows.zip -NewName "${newZipName}.zip"
         echo $newZipName
         ls -l .
-        echo "::set-output name=newZipName::$newZipName"
+        echo "{newZipName}={$newZipName}" >> $GITHUB_OUTPUT
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
