@@ -853,9 +853,9 @@ jobs:
           set -e
           cd icu4c/source
           mkdir -p icuexportdata/uprops/fast
-          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/fast --trie-type fast --all
+          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/fast --trie-type fast --all || exit 1
           mkdir -p icuexportdata/uprops/small
-          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/small --trie-type small --all
+          ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/small --trie-type small --all || exit 1
         env:
           LD_LIBRARY_PATH: lib
       - name: Build normalization data files
@@ -864,9 +864,9 @@ jobs:
           set -e
           cd icu4c/source
           mkdir -p icuexportdata/norm/fast
-          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/fast --trie-type fast --all
+          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/fast --trie-type fast --all || exit 1
           mkdir -p icuexportdata/norm/small
-          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/small --trie-type small --all
+          ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/small --trie-type small --all || exit 1
         env:
           LD_LIBRARY_PATH: lib
       - name: Build case data files
@@ -875,9 +875,9 @@ jobs:
           set -e
           cd icu4c/source
           mkdir -p icuexportdata/ucase/fast
-          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/fast --trie-type fast --all
+          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/fast --trie-type fast --all || exit 1
           mkdir -p icuexportdata/ucase/small
-          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/small --trie-type small --all
+          ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/small --trie-type small --all || exit 1
         env:
           LD_LIBRARY_PATH: lib
       - name: Build collation data files
@@ -887,10 +887,10 @@ jobs:
           cd icu4c/source
           FILES=$(ls data/coll/*.txt)
           mkdir -p icuexportdata/collation/unihan
-          ./bin/genrb -X -s ./ --ucadata data/in/coll/ucadata-unihan-icu4x.icu -d icuexportdata/collation/unihan $FILES
+          ./bin/genrb -X -s ./ --ucadata data/in/coll/ucadata-unihan-icu4x.icu -d icuexportdata/collation/unihan $FILES || exit 1
           rm icuexportdata/collation/unihan/*.res
           mkdir -p icuexportdata/collation/implicithan
-          ./bin/genrb -X -s ./ --ucadata data/in/coll/ucadata-implicithan-icu4x.icu -d icuexportdata/collation/implicithan $FILES
+          ./bin/genrb -X -s ./ --ucadata data/in/coll/ucadata-implicithan-icu4x.icu -d icuexportdata/collation/implicithan $FILES || exit 1
           rm icuexportdata/collation/implicithan/*.res
         env:
           LD_LIBRARY_PATH: lib
@@ -901,7 +901,7 @@ jobs:
           cd icu4c/source
           mkdir -p icuexportdata/segmenter/dictionary
           for FILE in $(ls data/brkitr/dictionaries); do
-            ./bin/gendict --uchars --toml data/brkitr/dictionaries/$FILE icuexportdata/segmenter/dictionary/$(basename $FILE .txt).toml
+            ./bin/gendict --uchars --toml data/brkitr/dictionaries/$FILE icuexportdata/segmenter/dictionary/$(basename $FILE .txt).toml ||exit 1
           done
         env:
           LD_LIBRARY_PATH: lib
