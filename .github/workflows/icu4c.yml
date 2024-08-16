@@ -408,7 +408,7 @@ jobs:
             win_ver: 'Win32'
           - arch: 'arm64'
             plat: 'ARM64'
-            win_ver: 'ARM64'
+            win_ver: 'WinARM64'
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
     - name: Set up MSBuild
@@ -487,7 +487,9 @@ jobs:
     - name: Run icuinfo from CMD
       shell: cmd
       run: |
-        echo 'Run icuinfo from CMD shell' && cd /d C:\tools\msys64\tmp\build-icu\bin && set PATH=C:\tools\msys64\mingw64\bin;%PATH% && icuinfo.exe
+        cd /d C:\tools\msys64\tmp\build-icu\bin
+        set PATH=C:\tools\msys64\mingw64\bin;%PATH%
+        .\icuinfo.exe
 
 #   # Run ICU4C tests with stubdata.
 #   run-with-stubdata:
@@ -831,7 +833,6 @@ jobs:
 #           pushd common && make -j -l4.5 && popd
 #           pushd i18n && make -j -l4.5 && popd
 
-
   icu4c-icuexportdata:
     name: Create Artifacts from icuexportdata
     runs-on: ubuntu-22.04
@@ -877,10 +878,10 @@ jobs:
           cd icu4c/source
           FILES=$(ls data/coll/*.txt)
           mkdir -p icuexportdata/collation/unihan
-          ./bin/genrb -X -s data/coll/ --ucadata data/in/coll/ucadata-unihan-icu4x.icu -d icuexportdata/collation/unihan $FILES
+          ./bin/genrb -X -s ./ --ucadata data/in/coll/ucadata-unihan-icu4x.icu -d icuexportdata/collation/unihan $FILES
           rm icuexportdata/collation/unihan/*.res
           mkdir -p icuexportdata/collation/implicithan
-          ./bin/genrb -X -s data/coll/ --ucadata data/in/coll/ucadata-implicithan-icu4x.icu -d icuexportdata/collation/implicithan $FILES
+          ./bin/genrb -X -s ./ --ucadata data/in/coll/ucadata-implicithan-icu4x.icu -d icuexportdata/collation/implicithan $FILES
           rm icuexportdata/collation/implicithan/*.res
         env:
           LD_LIBRARY_PATH: lib
