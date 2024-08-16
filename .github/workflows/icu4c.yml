@@ -848,6 +848,7 @@ jobs:
           CXX: clang++
       - name: Build property data files
         run: |
+          set -e
           cd icu4c/source
           mkdir -p icuexportdata/uprops/fast
           ./bin/icuexportdata --mode uprops --index --copyright --verbose --destdir icuexportdata/uprops/fast --trie-type fast --all
@@ -857,6 +858,7 @@ jobs:
           LD_LIBRARY_PATH: lib
       - name: Build normalization data files
         run: |
+          set -e
           cd icu4c/source
           mkdir -p icuexportdata/norm/fast
           ./bin/icuexportdata --mode norm --index --copyright --verbose --destdir icuexportdata/norm/fast --trie-type fast --all
@@ -866,6 +868,7 @@ jobs:
           LD_LIBRARY_PATH: lib
       - name: Build case data files
         run: |
+          set -e
           cd icu4c/source
           mkdir -p icuexportdata/ucase/fast
           ./bin/icuexportdata --mode ucase --index --copyright --verbose --destdir icuexportdata/ucase/fast --trie-type fast --all
@@ -875,6 +878,7 @@ jobs:
           LD_LIBRARY_PATH: lib
       - name: Build collation data files
         run: |
+          set -e
           cd icu4c/source
           FILES=$(ls data/coll/*.txt)
           mkdir -p icuexportdata/collation/unihan
@@ -887,6 +891,7 @@ jobs:
           LD_LIBRARY_PATH: lib
       - name: Build segmenter dictionary files
         run: |
+          set -e
           cd icu4c/source
           mkdir -p icuexportdata/segmenter/dictionary
           for FILE in $(ls data/brkitr/dictionaries); do
