@@ -841,12 +841,14 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Build
+        shell: bash -euxo pipefail {0}
         run: |
           cd icu4c/source && ./runConfigureICU Linux && make -j -l4.5
         env:
           CC: clang
           CXX: clang++
       - name: Build property data files
+        shell: bash -euxo pipefail {0}
         run: |
           set -e
           cd icu4c/source
@@ -857,6 +859,7 @@ jobs:
         env:
           LD_LIBRARY_PATH: lib
       - name: Build normalization data files
+        shell: bash -euxo pipefail {0}
         run: |
           set -e
           cd icu4c/source
@@ -867,6 +870,7 @@ jobs:
         env:
           LD_LIBRARY_PATH: lib
       - name: Build case data files
+        shell: bash -euxo pipefail {0}
         run: |
           set -e
           cd icu4c/source
@@ -877,6 +881,7 @@ jobs:
         env:
           LD_LIBRARY_PATH: lib
       - name: Build collation data files
+        shell: bash -euxo pipefail {0}
         run: |
           set -e
           cd icu4c/source
@@ -890,6 +895,7 @@ jobs:
         env:
           LD_LIBRARY_PATH: lib
       - name: Build segmenter dictionary files
+        shell: bash -euxo pipefail {0}
         run: |
           set -e
           cd icu4c/source
