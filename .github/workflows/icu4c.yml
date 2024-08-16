@@ -459,38 +459,34 @@ jobs:
   windows-msys2-gcc-x86_64:
     runs-on: windows-2019
     timeout-minutes: 45
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
     - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-    - name: Install MSYS2
-      run: |
-        choco install -y msys2
-        Import-Module $env:ChocolateyInstall\helpers\chocolateyProfile.psm1
-        refreshenv
-    - name: Install mingw-w64-x86_64-toolchain
-      run: |
-        c:\tools\msys64\usr\bin\bash.exe -lc "pacman -Syu --noconfirm"
-        c:\tools\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S mingw-w64-x86_64-toolchain"
-        C:\tools\msys64\usr\bin\bash.exe -lc "echo 'export PATH=/mingw64/bin:\$PATH' >> ~/.bashrc"
-        C:\tools\msys64\usr\bin\bash.exe -lc "source ~/.bashrc"
-        c:\tools\msys64\usr\bin\bash.exe -lc "pacman --noconfirm -S make"
-    - name: 'Add MinGW to PATH'
-      run: |
-        echo "C:\tools\msys64\mingw64\bin" >> $GITHUB_PATH
-        echo "C:\tools\msys64\usr\bin" >> $GITHUB_PATH
+    - name: Set up MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        msystem: mingw64
+        install: > 
+          base-devel 
+          mingw-w64-x86_64-toolchain 
+          make
     - name: 'Verify MinGW Installation'
-      run: c:\tools\msys64\usr\bin\bash.exe -lc 'gcc --version'
+      run: gcc --version
     - name: Build and Test
       run: |
-        set MSYSTEM=MINGW64
-        c:\tools\msys64\usr\bin\bash.exe -lc "cd '${{ github.workspace }}' && cd icu4c/source && ./runConfigureICU MinGW --prefix='/tmp/build-icu' && make -j -l4.5 check"
+        cd '${{ github.workspace }}' && cd icu4c/source && ./runConfigureICU MinGW --prefix='/tmp/build-icu' && make -j -l4.5 check
     - name: Make install
       run: |
-        set MSYSTEM=MINGW64
-        c:\tools\msys64\usr\bin\bash.exe -lc "cd '${{ github.workspace }}' && cd icu4c/source && make install && cd /tmp/build-icu && echo 'Recursive ls' && ls -lR"
+        cd '${{ github.workspace }}' && cd icu4c/source && make install && cd /tmp/build-icu && echo 'Recursive ls' && ls -lR
     - name: Run icuinfo
       run: |
-        set MSYSTEM=MINGW64
-        c:\tools\msys64\usr\bin\bash.exe -lc "echo 'Run icuinfo from MSYS shell' && cd /tmp/build-icu/bin && ./icuinfo.exe"
+        echo 'Run icuinfo from MSYS shell' && cd /tmp/build-icu/bin && ./icuinfo.exe
+    - name: Run icuinfo from CMD
+      shell: cmd
+      run: |
         echo 'Run icuinfo from CMD shell' && cd /d C:\tools\msys64\tmp\build-icu\bin && set PATH=C:\tools\msys64\mingw64\bin;%PATH% && icuinfo.exe
 
 #   # Run ICU4C tests with stubdata.
