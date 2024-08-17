@@ -18,6 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
+      - name: Add a check to the PR
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          gh api \
+            -X POST \
+            -F name='Comment Triggered Check' \
+            -F head_sha="${{ github.event.issue.pull_request.head.sha }}" \
+            /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Build and Exhaustive Tests
         run: |
@@ -29,14 +37,6 @@ jobs:
         run: |
           cd icu4j && cat `find . -name surefire-reports -type d -exec grep -l  -r --include="*.txt" FAILED {} \;`
         timeout-minutes: 2
-      - name: Add a check to the PR
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-          gh api \
-            -X POST \
-            -F name='Comment Triggered Check' \
-            -F head_sha="${{ github.event.issue.pull_request.head.sha }}" \
-            /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs
 
   icu4c-linux:
     if: contains(github.event_name, 'workflow_dispatch') || contains(github.event.comment.body, 'run exhaustive tests')
