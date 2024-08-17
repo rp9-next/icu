@@ -19,15 +19,21 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Print some debug info
+        run: |
+          echo "PR: ${{ github.event.issue.pull_request.number }}"
+          echo "SHA: ${{ github.event.issue.pull_request.head.sha }}"
+          echo "REPO: ${{ github.repository_owner }}/${{ github.event.repository.name }}"
       - name: Add a check to the PR
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           gh api \
-            -X POST \
-            -F name='Exhaustive Tests Check' \
-            -F head_sha="${{ github.event.issue.pull_request.head.sha }}" \
-            -F status='in_progress' \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
             /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs
+            -f name='Exhaustive Tests Check' \
+            -f head_sha="${{ github.event.issue.pull_request.head.sha }}" \
+            -f status='in_progress' \
 
       - name: Build and Exhaustive Tests
         run: |
