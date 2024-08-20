@@ -449,12 +449,12 @@ jobs:
         Rename-Item -Path icu-windows.zip -NewName "${newZipName}.zip"
         echo $newZipName
         ls -l .
-        echo "{newZipName}={$newZipName}" >> $GITHUB_OUTPUT
+        echo "{newZipName}={$newZipName}" >> $GITHUB_ENV
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: icu4c.${{ matrix.win_ver }}.run_#${{ github.run_number }}
-        path: icu4c/source/dist/${{ steps.set-zip-name.outputs.newZipName }}.zip
+        path: icu4c/source/dist/${{ env.newZipName }}.zip
 
   windows-msys2-gcc-x86_64:
     runs-on: windows-latest

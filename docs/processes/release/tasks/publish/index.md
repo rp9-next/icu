@@ -309,15 +309,11 @@ run \`make dist\`.
     *   Click on the green check mark (✔) on the most recent/last commit. (It
         might be a red X if the builds failed, hopefully not).
         *   This will open up a pop-up with links to various CI builds.
-    *   Click on one of the various links that says "Details" for the Azure CI
-        builds.
+    *   Click on one of the various links that says "Details" any of the GHA
+        builds and click on "Summary".
         *   This will open up the GitHub overview of the build status.<br>
-            ![image](azure-ci-builds.png)<br>
-    *   Click on the link "View more details on Azure Pipelines" link.
-        *   This will take you to the actual Azure CI build page.
-    *   On the top right of the page there should be a button titled
-        "Artifacts". Click this and it should show a drop-down with various ZIP
-        files that you can download.<br>
+            ![image](gha-ci-summary.png)<br>
+    *   Scroll down to find the sub-section "Artifacts". It should show you list of zips you can download<br>
         ![image](azure-ci-builds-artifacts.png)<br>
     *   The ZIP may automatically download for you.
     *   However, if you are signed-in to visualstudio.com then you might see a
