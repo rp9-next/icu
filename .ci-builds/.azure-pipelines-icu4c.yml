@@ -31,67 +31,18 @@ variables:
 
 jobs:
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang_Ubuntu_2204
-  displayName: 'C: Linux Clang (Ubuntu 22.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-22.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: clang
-        CXX: clang++
-    - script: |
-        cd icu4c/source/test/cintltst && LANG=C LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestCDefaultLocale
-      displayName: 'Test C Default locale'
-    - script: |
-        cd icu4c/source/test/cintltst && LANG=C.UTF-8 LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestCDefaultLocale
-      displayName: 'Test C.UTF-8 Default locale'
+# ICU4C_Clang_Ubuntu_2204
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang-release-build-and-test:
+# The build job was already present two testing steps are added "Test C Default locale" and "Test C.UTF-8 Default locale"
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang_Ubuntu_DataFilter_2204
-  displayName: 'C: Linux Clang DataFilter (Ubuntu 22.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-22.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    # Note: This job uses `make -j2` instead of `make -j -l2.5` because with more parallelism (PR #2456)
-    # this check became flaky. The build apparently was not done copying one or another .ucm file before
-    # calling makeconv for it, although the Makefile has appropriate dependencies.
-    - script: |
-        cd icu4c/source && \
-        ICU_DATA_FILTER_FILE=../../.ci-builds/data-filter.json ./runConfigureICU Linux && \
-        make -j2 tests && \
-        \[ ! -d data/out/build/icudt66l/translit \] && \
-        (cd test/intltest && LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./intltest translit/TransliteratorTest/TestBasicTransliteratorEvenWithoutData) && \
-        (cd test/cintltst && LANG=C LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestEnglishExemplarCharacters /tsutil/cldrtest/TestCoverage)
-      displayName: 'Build with Data Filter'
-      env:
-        CC: clang
-        CXX: clang++
+# ICU4C_Clang_Ubuntu_DataFilter_2204
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang-datafilter:
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang_Cpp17_Debug_Ubuntu_2204
-  displayName: 'C: Linux Clang C++17 Debug (Ubuntu 22.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-22.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    - script: |
-        export CXXFLAGS="-std=c++17 -Winvalid-constexpr" && cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux && make -j -l2.5 check
-      displayName: 'Build and Test C++17'
-      env:
-        CC: clang
-        CXX: clang++
+# ICU4C_Clang_Cpp17_Debug_Ubuntu_2204
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang-cpp17:
 #-------------------------------------------------------------------------
 - job: ICU4C_GCC_Ubuntu_2004
   displayName: 'C: Linux GCC (Ubuntu 20.04)'
@@ -109,118 +60,25 @@ jobs:
         CC: gcc
         CXX: g++
 #-------------------------------------------------------------------------
-- job: ICU4C_GCC11_Cpp20_Ubuntu_2004
-  displayName: 'C: Linux GCC-11 C++20 (Ubuntu 20.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    - script: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt update
-        sudo apt install gcc-11 g++-11
-      displayName: 'Install GCC-11'
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: gcc-11
-        CXX: g++-11
-        CXXFLAGS: '-std=c++20 -fext-numeric-literals'
+# ICU4C_GCC11_Cpp20_Ubuntu_2004
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : gcc11-cpp20:
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang_Ubuntu_2004_LANG
-  displayName: 'C: Linux Clang (Ubuntu 20.04) - LANG has extension tags'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: clang
-        CXX: clang++
-        LANG: "en_US@calendar=gregorian;hours=h12"
+# - job: ICU4C_Clang_Ubuntu_2004_LANG
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang-lang-with-extn-tags:
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang16_Ubuntu_2004_WarningsAsErrors
-  displayName: 'C: Linux Clang-16 WarningsAsErrors (Ubuntu 20.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    # Install Clang-16 from https://apt.llvm.org/
-    - script: |
-        curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
-        sudo apt update
-        sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
-      displayName: 'Install Clang-16'
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 tests
-      displayName: 'Build only (WarningsAsErrors)'
-      env:
-        CC: clang-16
-        CPPFLAGS: '-Werror -Wno-strict-prototypes -Wall -Wextra -Wextra-semi -Wundef -Wnon-virtual-dtor -Wsuggest-override -Wctad-maybe-unsupported'
-        CXX: clang++-16
+# - job: ICU4C_Clang16_Ubuntu_2004_WarningsAsErrors
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang16_Cpp20_Ubuntu_2004
-  displayName: 'C: Linux Clang-16 C++20 (Ubuntu 20.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    # Install Clang-16 from https://apt.llvm.org/
-    - script: |
-        curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
-        sudo apt update
-        sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
-      displayName: 'Install Clang-16'
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: clang-16
-        CPPFLAGS: '-Werror -Wno-strict-prototypes'
-        CXX: clang++-16
-        CXXFLAGS: '-std=c++20'
+# - job: ICU4C_Clang16_Cpp20_Ubuntu_2004
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
-- job: ICU4C_Clang16_Cpp20_libcpp_Ubuntu_2004
-  displayName: 'C: Linux Clang-16 C++20 libc++ (Ubuntu 20.04)'
-  timeoutInMinutes: 30
-  pool:
-    vmImage: 'ubuntu-20.04'
-  steps:
-    - checkout: self
-      lfs: true
-      fetchDepth: 10
-    # Install Clang-16 from https://apt.llvm.org/
-    - script: |
-        curl -Ls https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-        sudo apt-add-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main'
-        sudo apt update
-        sudo apt install -qy clang-16 lld-16 libc++-16-dev libc++abi-16-dev
-      displayName: 'Install Clang-16'
-    - script: |
-        cd icu4c/source && ./runConfigureICU Linux && make -j -l2.5 check
-      displayName: 'Build and Test'
-      env:
-        CC: clang-16
-        CPPFLAGS: '-Werror -Wno-strict-prototypes'
-        CXX: clang++-16
-        CXXFLAGS: '-std=c++20 -stdlib=libc++'
+# - job: ICU4C_Clang16_Cpp20_libcpp_Ubuntu_2004
+# Moved to GHA: .github\workflows\icu4c.yml 
+# Job : clang16-cpp20-warning-as-errors
 #-------------------------------------------------------------------------
 # VS 2022 Builds
 #-------------------------------------------------------------------------
