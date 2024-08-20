@@ -851,7 +851,6 @@ jobs:
       - name: Test Samples (samplecheck.bat)
         run: icu4c/source/samples/all/samplecheck.bat ${{ matrix.arch }} ${{ matrix.config }}
 
-
   icu4c-windows-cygwin-gcc:
     runs-on: windows-latest
     timeout-minutes: 50
@@ -895,6 +894,8 @@ jobs:
           ls -l ${{ env.CYG_ROOT }}\bin
       - name: Check Cygwin environment
         run: |
+          ls -l ${{ env.CYG_ROOT }}
+          ls -l ${{ env.CYG_ROOT }}\bins
           ${{ env.CYG_ROOT }}\bin\sh -lc 'echo Hello' && ${{ env.CYG_ROOT }}\bin\sh -lc 'uname -a'
       - name: Build ICU (source and test)
         run: |
