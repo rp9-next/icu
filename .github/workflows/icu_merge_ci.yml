@@ -847,7 +847,7 @@ jobs:
       - name: Run Tests (icucheck.bat)
         run: icu4c/source/allinone/icucheck.bat ${{ matrix.arch }} ${{ matrix.config }}
       - name: Build Sample Solution
-        run: msbuild icu4c/source/samples/all/all.sln /p:Configuration=${{ matrix.config }} /p:Platform=${{ matrix.platform }}
+        run: msbuild icu4c/source/samples/all/all.sln /p:Configuration=${{ matrix.config }} /p:Platform=${{ matrix.arch }}
       - name: Test Samples (samplecheck.bat)
         run: icu4c/source/samples/all/samplecheck.bat ${{ matrix.arch }} ${{ matrix.config }}
 
@@ -891,9 +891,11 @@ jobs:
       - name: Install Cygwin
         run: |
           ${{ env.CYG_CACHED_SETUP }} --no-verify --quiet-mode --no-shortcuts --no-startmenu --no-desktop --upgrade-also --only-site --site "${{ env.CYG_MIRROR }}" --root "${{ env.CYG_ROOT }}" --local-package-dir "${{ env.CYG_CACHE }}" --packages "${{ env.CYG_PACKAGES }}"
+          ls -l ${{ env.CYG_ROOT }}
+          ls -l ${{ env.CYG_ROOT }}\bin
       - name: Check Cygwin environment
         run: |
-          ${{ env.CYG_ROOT }}/bin/sh -lc 'echo Hello' && ${{ env.CYG_ROOT }}/bin/sh -lc 'uname -a'
+          ${{ env.CYG_ROOT }}\bin\sh -lc 'echo Hello' && ${{ env.CYG_ROOT }}\bin\sh -lc 'uname -a'
       - name: Build ICU (source and test)
         run: |
           ${{ env.CYG_ROOT }}/bin/bash -lc "cd $(cygpath \"${{ github.workspace }}\") && cd icu4c/source && ./runConfigureICU Cygwin && make tests -j -l4.5"
