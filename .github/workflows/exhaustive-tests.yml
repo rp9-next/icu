@@ -15,6 +15,7 @@ jobs:
         (contains(github.event_name, 'workflow_dispatch') ||
          contains(github.event.comment.body, 'run exhaustive tests'))
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Fetch PR Details
