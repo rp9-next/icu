@@ -26,19 +26,10 @@ jobs:
           SHA=$(jq -r '.head.sha' pr.json)
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
           echo "SHA=$SHA" >> $GITHUB_ENV
-      - name: Fetch current job ID
-        id: get-job-id
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-          JOB_ID=$(gh api \
-            -X GET \
-            "/repos/${{ github.repository_owner }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
-            -q ".jobs[] | select(.name == \"${{ github.job }}\") | .id")
-          echo "JOB_ID=$JOB_ID" >> $GITHUB_ENV
       - name: Add a check to the PR
         id: add-check
         run: |
-          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ env.JOB_ID }}"
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo $WORKFLOW_URL
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           CHECK_ID=$(gh api \
@@ -47,8 +38,8 @@ jobs:
             -F head_sha="${{ env.SHA }}" \
             -F status='in_progress' \
             -F details_url=$WORKFLOW_URL \
-            -F output[title]=Exhaustive Tests \
-            -F output[summary]=Running exhaustive tests for ICU4J \
+            -F output[title]='Exhaustive Tests' \
+            -F output[summary]='Running exhaustive tests for ICU4J' \
             -F output[text]=$WORKFLOW_URL \
             /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs \
             -q .id)
@@ -66,7 +57,7 @@ jobs:
       - name: Complete the check
         if: always()
         run: |
-          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ env.JOB_ID }}"
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
           CONCLUSION="success"
           if [ "${{ job.status }}" != "success" ]; then
@@ -77,8 +68,8 @@ jobs:
             -F status="$STATUS" \
             -F conclusion="$CONCLUSION" \
             -F details_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            -F output[title]=Exhaustive Tests \
-            -F output[summary]=Completed exhaustive tests for ICU4J \
+            -F output[title]='Exhaustive Tests' \
+            -F output[summary]='Completed exhaustive tests for ICU4J' \
             -F output[text]=$WORKFLOW_URL \
             /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs/${{ env.CHECK_ID }}
 
@@ -98,19 +89,10 @@ jobs:
           SHA=$(jq -r '.head.sha' pr.json)
           echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
           echo "SHA=$SHA" >> $GITHUB_ENV
-      - name: Fetch current job ID
-        id: get-job-id
-        run: |
-          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-          JOB_ID=$(gh api \
-            -X GET \
-            "/repos/${{ github.repository_owner }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs" \
-            -q ".jobs[] | select(.name == \"${{ github.job }}\") | .id")
-          echo "JOB_ID=$JOB_ID" >> $GITHUB_ENV
       - name: Add a check to the PR
         id: add-check
         run: |
-          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ env.JOB_ID }}"
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo $WORKFLOW_URL
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           CHECK_ID=$(gh api \
@@ -119,8 +101,8 @@ jobs:
             -F head_sha="${{ env.SHA }}" \
             -F status='in_progress' \
             -F details_url=$WORKFLOW_URL \
-            -F output[title]=Exhaustive Tests \
-            -F output[summary]=Running exhaustive tests for ICU4C \
+            -F output[title]='Exhaustive Tests' \
+            -F output[summary]='Running exhaustive tests for ICU4C' \
             -F output[text]=$WORKFLOW_URL \
             /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs \
             -q .id)
@@ -137,7 +119,7 @@ jobs:
       - name: Complete the check
         if: always()
         run: |
-          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ env.JOB_ID }}"
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
           CONCLUSION="success"
           if [ "${{ job.status }}" != "success" ]; then
@@ -148,7 +130,7 @@ jobs:
             -F status="$STATUS" \
             -F conclusion="$CONCLUSION" \
             -F details_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-            -F output[title]=Exhaustive Tests \
-            -F output[summary]=Completed exhaustive tests for ICU4C \
+            -F output[title]='Exhaustive Tests' \
+            -F output[summary]='Completed exhaustive tests for ICU4C' \
             -F output[text]=$WORKFLOW_URL \
             /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs/${{ env.CHECK_ID }}
