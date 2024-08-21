@@ -973,7 +973,7 @@ jobs:
           }
       - name: Install Cygwin
         run: |
-          ${{ env.CYG_CACHED_SETUP }} --no-verify --quiet-mode --no-shortcuts --no-startmenu --no-desktop --upgrade-also --only-site --site "${{ env.CYG_MIRROR }}" --root "${{ env.CYG_ROOT }}" --local-package-dir "${{ env.CYG_CACHE }}" --packages "${{ env.CYG_PACKAGES }}"
+          ${{ env.CYG_CACHED_SETUP }} --verbose --no-shortcuts --no-startmenu --no-desktop --upgrade-also --only-site --site "${{ env.CYG_MIRROR }}" --root "${{ env.CYG_ROOT }}" --local-package-dir "${{ env.CYG_CACHE }}" --packages "${{ env.CYG_PACKAGES }}"
       - name: Check Dir
         run: |
           ls -l ${{ env.CYG_ROOT }}
