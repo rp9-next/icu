@@ -979,7 +979,7 @@ jobs:
       - name: Check Dir
         run: |
           ls -l ${{ env.CYG_ROOT }}
-          ls -l ${{ env.CYG_ROOT }}\bins
+          ls -l ${{ env.CYG_ROOT }}\bin
       - name: Check Cygwin environment
         run: |
           ${{ env.CYG_ROOT }}\bin\sh -lc 'echo Hello' && ${{ env.CYG_ROOT }}\bin\sh -lc 'uname -a'
