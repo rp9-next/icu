@@ -967,7 +967,7 @@ jobs:
             Write-Host "Downloading Cygwin setup..."
 
             $start_time = Get-Date
-            (New-Object System.Net.WebClient).DownloadFile(${{ env.CYG_URL }}, ${{ env.CYG_CACHED_SETUP }})
+            (New-Object System.Net.WebClient).DownloadFile("${{ env.CYG_URL }}", "${{ env.CYG_CACHED_SETUP }}")
 
             Write-Output "Download took: $((Get-Date).Subtract($start_time).Seconds) second(s)."
           }
