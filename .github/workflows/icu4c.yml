@@ -936,7 +936,7 @@ jobs:
         run: icu4c/source/samples/all/samplecheck.bat ${{ matrix.arch }} ${{ matrix.config }}
 
   icu4c-windows-cygwin-gcc:
-    runs-on: windows-latest
+    runs-on: windows-2019
     timeout-minutes: 50
     env:
       ICU_CI_CACHE: c:\icu-ci-cache
@@ -973,7 +973,7 @@ jobs:
           }
       - name: Install Cygwin
         run: |
-          ${{ env.CYG_CACHED_SETUP }} --no-verify --verbose --no-shortcuts --no-startmenu --no-desktop --upgrade-also --only-site --site "${{ env.CYG_MIRROR }}" --root "${{ env.CYG_ROOT }}" --local-package-dir "${{ env.CYG_CACHE }}" --packages "${{ env.CYG_PACKAGES }}"
+          ${{ env.CYG_CACHED_SETUP }} --no-verify --quiet-mode --no-shortcuts --no-startmenu --no-desktop --upgrade-also --only-site --site "${{ env.CYG_MIRROR }}" --root "${{ env.CYG_ROOT }}" --local-package-dir "${{ env.CYG_CACHE }}" --packages "${{ env.CYG_PACKAGES }}"
       - name: Check Dir
         run: |
           ls -l ${{ env.CYG_ROOT }}
