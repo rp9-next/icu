@@ -947,6 +947,9 @@ jobs:
       CYG_CACHE: 'c:\icu-ci-cache\cygwin64-v3'
       CYG_CACHED_SETUP: 'c:\icu-ci-cache\cygwin64-v3\setup.exe'
       CYG_VERSION_KEY: cygwin-3.2
+    defaults:
+      run:
+        shell: cmd
     steps:
       - name: Configure Git to checkout with Unix line endings (LF)
         run: |
@@ -958,6 +961,7 @@ jobs:
           path: ${{ env.CYG_CACHE }}
           key: ${{ hashFiles('.github/workflows/icu_merge_ci.yml') }}
       - name: Download Cygwin setup
+        shell: pwsh
         run: |
           if ( !(Test-Path "${{ env.CYG_CACHED_SETUP }}" -NewerThan (Get-Date).AddDays(-7)) )
           {
@@ -976,8 +980,9 @@ jobs:
            ${{ env.CYG_CACHED_SETUP }} --root ${{ env.CYG_ROOT }} --local-package-dir ${{ env.CYG_CACHE }} --site ${{ env.CYG_MIRROR }} --quiet-mode --packages ${{ env.CYG_PACKAGES }}
       - name: Check Dir
         run: |
-          ls -l ${{ env.CYG_ROOT }}
-          ls -l ${{ env.CYG_ROOT }}\bin
+          dir ${{ env.CYG_ROOT }}
+          dir ${{ env.CYG_ROOT }}\\bin
+          dir ${{ env.CYG_ROOT }}\bin
       - name: Check Cygwin environment
         run: |
           ${{ env.CYG_ROOT }}\bin\sh -lc 'echo Hello' && ${{ env.CYG_ROOT }}\bin\sh -lc 'uname -a'
