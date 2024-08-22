@@ -936,7 +936,7 @@ jobs:
         run: icu4c/source/samples/all/samplecheck.bat ${{ matrix.arch }} ${{ matrix.config }}
 
   icu4c-windows-cygwin-gcc:
-    runs-on: windows-2019
+    runs-on: windows-latest
     timeout-minutes: 50
     env:
       ICU_CI_CACHE: c:\icu-ci-cache
@@ -966,26 +966,18 @@ jobs:
           if ( !(Test-Path "${{ env.CYG_CACHED_SETUP }}" -NewerThan (Get-Date).AddDays(-7)) )
           {
             Write-Host "Cached Cygwin setup does not exist or is older than 7 days, downloading from external site."
-
             New-Item -Force -Type Directory ${{ env.CYG_CACHE }}
             Write-Host "Downloading Cygwin setup..."
-
             $start_time = Get-Date
             (New-Object System.Net.WebClient).DownloadFile("${{ env.CYG_URL }}", "${{ env.CYG_CACHED_SETUP }}")
-
             Write-Output "Download took: $((Get-Date).Subtract($start_time).Seconds) second(s)."
           }
       - name: Install Cygwin
         run: |
-           ${{ env.CYG_CACHED_SETUP }} --root ${{ env.CYG_ROOT }} --local-package-dir ${{ env.CYG_CACHE }} --site ${{ env.CYG_MIRROR }} --quiet-mode --packages ${{ env.CYG_PACKAGES }}
-      - name: Check Dir
-        run: |
-          dir ${{ env.CYG_ROOT }}
-          dir ${{ env.CYG_ROOT }}\\bin
-          dir ${{ env.CYG_ROOT }}\bin
+          ${{ env.CYG_CACHED_SETUP }} --no-verify --quiet-mode --no-shortcuts --no-startmenu --no-desktop --upgrade-also --only-site --site "${{ env.CYG_MIRROR }}" --root "${{ env.CYG_ROOT }}" --local-package-dir "${{ env.CYG_CACHE }}" --packages "${{ env.CYG_PACKAGES }}"
       - name: Check Cygwin environment
         run: |
-          ${{ env.CYG_ROOT }}\bin\sh -lc 'echo Hello' && ${{ env.CYG_ROOT }}\bin\sh -lc 'uname -a'
+          ${{ env.CYG_ROOT }}/bin/sh -lc 'echo Hello' && ${{ env.CYG_ROOT }}/bin/sh -lc 'uname -a'
       - name: Build ICU (source and test)
         run: |
           ${{ env.CYG_ROOT }}/bin/bash -lc "cd $(cygpath \"${{ github.workspace }}\") && cd icu4c/source && ./runConfigureICU Cygwin && make tests -j -l4.5"
@@ -998,5 +990,6 @@ jobs:
         env:
           CC: gcc
           CXX: g++
+
 
     
