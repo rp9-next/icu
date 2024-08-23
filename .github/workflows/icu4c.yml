@@ -344,7 +344,7 @@ jobs:
         run: |
           cd icu4c/source;
           PYTHON=python3 ./runConfigureICU MacOSX;
-          make -j -l4.5 check
+          make -j -l2.5 check
 
   # Windows MSVC builds
 #  windows-msvc:
