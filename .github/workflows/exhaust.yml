@@ -42,11 +42,13 @@ jobs:
           !contains(github.event.issue.pull_request.body, 'run exhaustive tests'))
         run: echo "RUN_TESTS=false" >> $GITHUB_ENV
       - name: Check if we should update PR details
-        if: contains(github.event.comment.body, 'run exhaustive tests') ||
+        if: |
+          contains(github.event.comment.body, 'run exhaustive tests') ||
           contains(github.event.issue.pull_request.body, 'run exhaustive tests')
         run: echo "UPDATE_PR=true" >> $GITHUB_ENV
       - name: Check if we should update PR details
-        if: !contains(github.event.comment.body, 'run exhaustive tests') &&
+        if: |
+          !contains(github.event.comment.body, 'run exhaustive tests') &&
           !contains(github.event.issue.pull_request.body, 'run exhaustive tests')
         run: echo "UPDATE_PR=false" >> $GITHUB_ENV
 
