@@ -17,7 +17,7 @@ on:
   issue_comment:
     types: [created, edited]
   pull_request:
-    types: [opened, edited]
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   checks: write
@@ -25,18 +25,42 @@ permissions:
 
 jobs:
 
+  # Sets the variable RUN_TESTS to true if we should be running exhaustive tests
+  gha-setenv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if we should run exhaustive tests
+        if: github.event.issue.pull_request != null &&
+          (contains(github.event_name, 'workflow_dispatch') ||
+          contains(github.event.comment.body, 'run exhaustive tests') ||
+          contains(github.event.issue.pull_request.body, 'run exhaustive tests'))
+        run: echo "RUN_TESTS=true" >> $GITHUB_ENV
+      - name: Check if we should run exhaustive tests
+        if: github.event.issue.pull_request == null ||
+          (!contains(github.event_name, 'workflow_dispatch') &&
+          !contains(github.event.comment.body, 'run exhaustive tests') &&
+          !contains(github.event.issue.pull_request.body, 'run exhaustive tests'))
+        run: echo "RUN_TESTS=false" >> $GITHUB_ENV
+      - name: Check if we should update PR details
+        if: contains(github.event.comment.body, 'run exhaustive tests') ||
+          contains(github.event.issue.pull_request.body, 'run exhaustive tests')
+        run: echo "UPDATE_PR=true" >> $GITHUB_ENV
+      - name: Check if we should update PR details
+        if: !contains(github.event.comment.body, 'run exhaustive tests') &&
+          !contains(github.event.issue.pull_request.body, 'run exhaustive tests')
+        run: echo "UPDATE_PR=false" >> $GITHUB_ENV
+
   # Runs exhaustive tests for ICU4J on Linux
   icu4j-linux:
-    if: github.event.issue.pull_request != null &&
-        (contains(github.event_name, 'workflow_dispatch') ||
-         contains(github.event.comment.body, 'run exhaustive tests'))
+    needs: gha-setenv
+    if: ${{ env.RUN_TESTS }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Fetch PR Details
         id: pr-details
-        if: contains(github.event.comment.body, 'run exhaustive tests')
+        if: ${{ env.UPDATE_PR }}
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           gh api "${{ github.event.issue.pull_request.url }}" > pr.json
@@ -46,7 +70,7 @@ jobs:
           echo "SHA=$SHA" >> $GITHUB_ENV
       - name: Add a check to the PR
         id: add-check
-        if: contains(github.event.comment.body, 'run exhaustive tests')
+        if: ${{ env.UPDATE_PR }}
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo $WORKFLOW_URL
@@ -74,7 +98,7 @@ jobs:
           cd icu4j && cat `find . -name surefire-reports -type d -exec grep -l  -r --include="*.txt" FAILED {} \;`
         timeout-minutes: 2
       - name: Complete the check
-        if: always() && contains(github.event.comment.body, 'run exhaustive tests')
+        if: always() && ${{ env.UPDATE_PR }}
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
@@ -92,16 +116,17 @@ jobs:
             -F output[text]=$WORKFLOW_URL \
             /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs/${{ env.CHECK_ID }}
 
-
+  # Runs exhaustive tests for ICU4C on Linux Clang
   icu4c-linux-clang:
-    if: contains(github.event_name, 'workflow_dispatch') || contains(github.event.comment.body, 'run exhaustive tests')
+    needs: gha-setenv
+    if: ${{ env.RUN_TESTS }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Fetch PR Details
         id: pr-details
-        if: contains(github.event.comment.body, 'run exhaustive tests')
+        if: ${{ env.UPDATE_PR }}
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           gh api "${{ github.event.issue.pull_request.url }}" > pr.json
@@ -111,7 +136,7 @@ jobs:
           echo "SHA=$SHA" >> $GITHUB_ENV
       - name: Add a check to the PR
         id: add-check
-        if: contains(github.event.comment.body, 'run exhaustive tests')
+        if: ${{ env.UPDATE_PR }}
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo $WORKFLOW_URL
@@ -138,7 +163,7 @@ jobs:
           CC: clang
           CXX: clang++
       - name: Complete the check
-        if: always() && contains(github.event.comment.body, 'run exhaustive tests')
+        if: always() && ${{ env.UPDATE_PR }}
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
