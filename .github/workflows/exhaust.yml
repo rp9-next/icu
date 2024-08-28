@@ -1,15 +1,3 @@
-# Copyright (C) 2016 and later: Unicode, Inc. and others.
-# License & terms of use: http://www.unicode.org/copyright.html
-#
-# GitHub Actions configuration for Exhaustive Tests for ICU.
-# 
-# Note: The exhaustive test configuration is in a separate file
-# so that it can be run independently from the regular builds.
-#
-# To run these tests, comment on a PR with "run exhaustive tests" 
-# or manually trigger the workflow. If triggered from a PR comment,
-# it adds checks to the PR and updates them with the results.
-
 name: Exhaustive Tests for ICU
 
 on:
@@ -28,41 +16,42 @@ jobs:
   # Sets the variable RUN_TESTS to true if we should be running exhaustive tests
   gha-setenv:
     runs-on: ubuntu-latest
+    outputs:
+      run_tests: ${{ steps.setenv.outputs.RUN_TESTS }}
+      update_pr: ${{ steps.setenv.outputs.UPDATE_PR }}
     steps:
-      - name: Check if we should run exhaustive tests
-        if: github.event.issue.pull_request != null &&
-          (contains(github.event_name, 'workflow_dispatch') ||
-          contains(github.event.comment.body, 'run exhaustive tests') ||
-          contains(github.event.issue.pull_request.body, 'run exhaustive tests'))
-        run: echo "RUN_TESTS=true" >> $GITHUB_ENV
-      - name: Check if we should run exhaustive tests
-        if: github.event.issue.pull_request == null ||
-          (!contains(github.event_name, 'workflow_dispatch') &&
-          !contains(github.event.comment.body, 'run exhaustive tests') &&
-          !contains(github.event.issue.pull_request.body, 'run exhaustive tests'))
-        run: echo "RUN_TESTS=false" >> $GITHUB_ENV
-      - name: Check if we should update PR details
-        if: |
-          contains(github.event.comment.body, 'run exhaustive tests') ||
-          contains(github.event.issue.pull_request.body, 'run exhaustive tests')
-        run: echo "UPDATE_PR=true" >> $GITHUB_ENV
-      - name: Check if we should update PR details
-        if: |
-          !contains(github.event.comment.body, 'run exhaustive tests') &&
-          !contains(github.event.issue.pull_request.body, 'run exhaustive tests')
-        run: echo "UPDATE_PR=false" >> $GITHUB_ENV
+      - id: setenv
+        run: |
+          if [[ "${{ github.event.issue.pull_request }}" != "" ]] && \
+             ([[ "${{ github.event_name }}" == "workflow_dispatch" ]] || \
+              [[ "${{ github.event.comment.body }}" =~ "run exhaustive tests" ]] || \
+              [[ "${{ github.event.issue.pull_request.body }}" =~ "run exhaustive tests" ]]); then
+            echo "RUN_TESTS=true" >> $GITHUB_ENV
+            echo "::set-output name=RUN_TESTS::true"
+          else
+            echo "RUN_TESTS=false" >> $GITHUB_ENV
+            echo "::set-output name=RUN_TESTS::false"
+          fi
+          if [[ "${{ github.event.comment.body }}" =~ "run exhaustive tests" ]] || \
+             [[ "${{ github.event.issue.pull_request.body }}" =~ "run exhaustive tests" ]]; then
+            echo "UPDATE_PR=true" >> $GITHUB_ENV
+            echo "::set-output name=UPDATE_PR::true"
+          else
+            echo "UPDATE_PR=false" >> $GITHUB_ENV
+            echo "::set-output name=UPDATE_PR::false"
+          fi
 
   # Runs exhaustive tests for ICU4J on Linux
   icu4j-linux:
     needs: gha-setenv
-    if: ${{ env.RUN_TESTS }}
+    if: ${{ needs.gha-setenv.outputs.run_tests == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Fetch PR Details
         id: pr-details
-        if: ${{ env.UPDATE_PR }}
+        if: ${{ needs.gha-setenv.outputs.update_pr == 'true' }}
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           gh api "${{ github.event.issue.pull_request.url }}" > pr.json
@@ -72,7 +61,7 @@ jobs:
           echo "SHA=$SHA" >> $GITHUB_ENV
       - name: Add a check to the PR
         id: add-check
-        if: ${{ env.UPDATE_PR }}
+        if: ${{ needs.gha-setenv.outputs.update_pr == 'true' }}
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo $WORKFLOW_URL
@@ -100,7 +89,7 @@ jobs:
           cd icu4j && cat `find . -name surefire-reports -type d -exec grep -l  -r --include="*.txt" FAILED {} \;`
         timeout-minutes: 2
       - name: Complete the check
-        if: always() && ${{ env.UPDATE_PR }}
+        if: always() && ${{ needs.gha-setenv.outputs.update_pr == 'true' }}
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
@@ -121,14 +110,14 @@ jobs:
   # Runs exhaustive tests for ICU4C on Linux Clang
   icu4c-linux-clang:
     needs: gha-setenv
-    if: ${{ env.RUN_TESTS }}
+    if: ${{ needs.gha-setenv.outputs.run_tests == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Fetch PR Details
         id: pr-details
-        if: ${{ env.UPDATE_PR }}
+        if: ${{ needs.gha-setenv.outputs.update_pr == 'true' }}
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           gh api "${{ github.event.issue.pull_request.url }}" > pr.json
@@ -138,7 +127,7 @@ jobs:
           echo "SHA=$SHA" >> $GITHUB_ENV
       - name: Add a check to the PR
         id: add-check
-        if: ${{ env.UPDATE_PR }}
+        if: ${{ needs.gha-setenv.outputs.update_pr == 'true' }}
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo $WORKFLOW_URL
@@ -165,7 +154,7 @@ jobs:
           CC: clang
           CXX: clang++
       - name: Complete the check
-        if: always() && ${{ env.UPDATE_PR }}
+        if: always() && ${{ needs.gha-setenv.outputs.update_pr == 'true' }}
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
