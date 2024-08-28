@@ -36,8 +36,10 @@ jobs:
           else
             echo "UPDATE_PR=false" >> $GITHUB_OUTPUT
           fi
-          echo "run_test: ${{ setenv.run_tests }}"
-          echo "update_pr: ${{ setenv.update_pr }}"
+          echo "run_test: ${{ steps.setenv.outputs.run_tests }}"
+          echo "update_pr: ${{ steps.setenv.outputs.update_pr }}"
+          echo "run_test: ${{ steps.setenv.outputs.RUN_TESTS }}"
+          echo "update_pr: ${{ steps.setenv.outputs.UPDATE_PR }}"
 
   # Runs exhaustive tests for ICU4J on Linux
   icu4j-linux:
