@@ -16,6 +16,8 @@ on:
   workflow_dispatch:
   issue_comment:
     types: [created, edited]
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   checks: write
