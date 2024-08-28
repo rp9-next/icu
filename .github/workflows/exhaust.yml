@@ -15,7 +15,7 @@ name: Exhaustive Tests for ICU
 on:
   workflow_dispatch:
   issue_comment:
-    types: [created]
+    types: [created, edited, deleted]
 
 permissions:
   checks: write
