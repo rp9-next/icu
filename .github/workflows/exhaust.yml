@@ -15,7 +15,7 @@ jobs:
 
   # Sets the variable RUN_TESTS to true if we should be running exhaustive tests
   gha-setenv:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     outputs:
       run_tests: ${{ steps.setenv.outputs.RUN_TESTS }}
       update_pr: ${{ steps.setenv.outputs.UPDATE_PR }}
@@ -26,20 +26,18 @@ jobs:
              ([[ "${{ github.event_name }}" == "workflow_dispatch" ]] || \
               [[ "${{ github.event.comment.body }}" =~ "run exhaustive tests" ]] || \
               [[ "${{ github.event.issue.pull_request.body }}" =~ "run exhaustive tests" ]]); then
-            echo "RUN_TESTS=true" >> $GITHUB_ENV
-            echo "::set-output name=RUN_TESTS::true"
+            echo "RUN_TESTS=true" >> $GITHUB_OUTPUT
           else
-            echo "RUN_TESTS=false" >> $GITHUB_ENV
-            echo "::set-output name=RUN_TESTS::false"
+            echo "RUN_TESTS=false" >> $GITHUB_OUTPUT
           fi
           if [[ "${{ github.event.comment.body }}" =~ "run exhaustive tests" ]] || \
              [[ "${{ github.event.issue.pull_request.body }}" =~ "run exhaustive tests" ]]; then
-            echo "UPDATE_PR=true" >> $GITHUB_ENV
-            echo "::set-output name=UPDATE_PR::true"
+            echo "UPDATE_PR=true" >> $GITHUB_OUTPUT
           else
-            echo "UPDATE_PR=false" >> $GITHUB_ENV
-            echo "::set-output name=UPDATE_PR::false"
+            echo "UPDATE_PR=false" >> $GITHUB_OUTPUT
           fi
+          echo "run_test: ${{ setenv.run_tests }}"
+          echo "update_pr: ${{ setenv.update_pr }}"
 
   # Runs exhaustive tests for ICU4J on Linux
   icu4j-linux:
