@@ -266,23 +266,31 @@ jobs:
 #           CPPFLAGS: -fsanitize=thread
 #           LDFLAGS: -fsanitize=thread
 
-#   #------------------------------------------------------
-#   # Clang Linux with data filter
-#   # Note: This job uses `make -j2` instead of `make -j -l4.5` because with more parallelism (PR #2456)
-#   # this check became flaky. The build apparently was not done copying one or another .ucm file before
-#   # calling makeconv for it, although the Makefile has appropriate dependencies.
-#   clang-datafilter:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-#       - name: Build ICU4C with clang
-#         run: |
-#           cd icu4c/source && \
-#           ICU_DATA_FILTER_FILE=../../.github/data-filter.json ./runConfigureICU Linux/clang && \
-#           make -j2 tests && \
-#           \[ ! -d data/out/build/icudt66l/translit \] && \
-#           (cd test/intltest && LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./intltest translit/TransliteratorTest/TestBasicTransliteratorEvenWithoutData) && \
-#           (cd test/cintltst && LANG=C LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestEnglishExemplarCharacters /tsutil/cldrtest/TestCoverage)
+  #------------------------------------------------------
+  # Clang Linux with data filter
+  # Note: This job uses `make -j2` instead of `make -j -l4.5` because with more parallelism (PR #2456)
+  # this check became flaky. The build apparently was not done copying one or another .ucm file before
+  # calling makeconv for it, although the Makefile has appropriate dependencies.
+  clang-datafilter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Extract ICU version
+        run: |
+          # Extract ICU version from icuver.txt
+          icuverContent=$(cat icu4c/source/data/misc/icuver.txt)
+          icuVersion=$(echo "$icuverContent" | grep -oP 'ICUVersion\{"\K\d+\.\d+\.\d+\.\d+')
+          majorVersion=$(echo "$icuVersion" | cut -d. -f1)
+          echo "majorVersion=$majorVersion"
+          echo "majorVersion=$majorVersion" >> $GITHUB_ENV
+      - name: Build ICU4C with clang
+        run: |
+          cd icu4c/source && \
+          ICU_DATA_FILTER_FILE=../../.github/data-filter.json ./runConfigureICU Linux/clang && \
+          make -j2 tests && \
+          \[ ! -d data/out/build/icudt${majorVersion}l/translit \] && \
+          (cd test/intltest && LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./intltest translit/TransliteratorTest/TestBasicTransliteratorEvenWithoutData) && \
+          (cd test/cintltst && LANG=C LD_LIBRARY_PATH=../../lib:../../tools/ctestfw ./cintltst /tsutil/cloctst/TestEnglishExemplarCharacters /tsutil/cldrtest/TestCoverage)
 
 #   # Clang Linux with CPP 17
 #   clang-cpp17:
