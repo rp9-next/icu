@@ -2,8 +2,8 @@ name: Exhaustive Tests for ICU
 
 env:
   PR_COMMENT_TRIGGER_TEXT: "run exhaustive tests"
-  RUN_TESTS: true
-  UPDATE_PR: true
+  RUN_TESTS: false
+  UPDATE_PR: false
 
 on:
   workflow_dispatch:
@@ -86,6 +86,8 @@ jobs:
 
           echo "Variable setup done"
           cat $GITHUB_ENV
+          echo "vars.rt: ${{ vars.RUN_TESTS}}"
+          echo "vars.up: ${{ vars.UPDATE_PR}}"
 
 
   # Runs exhaustive tests for ICU4J on Linux
