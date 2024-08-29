@@ -26,6 +26,10 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Print event details
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event: ${{ github.event }}"
       - name: Fetch PR Details
         id: pr-details
         if: contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
