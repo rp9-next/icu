@@ -16,16 +16,16 @@ permissions:
 
 jobs:
 
-  # Sets environment variables based on the github event
+  # Sets environment variables based on the GitHub event
   gha-setenv:
-    runs-on: macos-latest # Run on macos becuase runners are allocated quicker than linux
+    runs-on: macos-latest # Run on macos because runners are allocated quicker than linux
     steps:
       - name: Set env vars
         run: |
           set_vars() {
-            local pr_url=$1
-            local run_tests=$2
-            local update_pr=$3
+            local pr_url="$1"
+            local run_tests="$2"
+            local update_pr="$3"
 
             echo "RUN_TESTS=$run_tests" >> $GITHUB_ENV
             echo "UPDATE_PR=$update_pr" >> $GITHUB_ENV
@@ -33,9 +33,9 @@ jobs:
             WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             echo "WORKFLOW_URL=$WORKFLOW_URL" >> $GITHUB_ENV
 
-            if [ "$update_pr" == "true" ]; then
-              echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
-              gh api $pr_url > pr.json
+            if [ "$update_pr" = "true" ]; then
+              echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+              gh api "$pr_url" > pr.json
               PR_NUMBER=$(jq -r '.number' pr.json)
               SHA=$(jq -r '.head.sha' pr.json)
               echo "PR_URL=$pr_url" >> $GITHUB_ENV
@@ -45,12 +45,12 @@ jobs:
               ICU4J_CHECK_ID=$(gh api \
                 -X POST \
                 -F name='Exhaustive Tests / ICU4J' \
-                -F head_sha="${{ env.SHA }}" \
+                -F head_sha="$SHA" \
                 -F status='in_progress' \
-                -F details_url=$WORKFLOW_URL \
+                -F details_url="$WORKFLOW_URL" \
                 -F output[title]='Exhaustive Tests' \
                 -F output[summary]='Running exhaustive tests for ICU4J' \
-                -F output[text]=${{ env.WORKFLOW_URL }} \
+                -F output[text]="$WORKFLOW_URL" \
                 /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs \
                 -q .id)
               echo "ICU4J_CHECK_ID=$ICU4J_CHECK_ID" >> $GITHUB_ENV
@@ -58,27 +58,27 @@ jobs:
               ICU4C_CHECK_ID=$(gh api \
                 -X POST \
                 -F name='Exhaustive Tests / ICU4C' \
-                -F head_sha="${{ env.SHA }}" \
+                -F head_sha="$SHA" \
                 -F status='in_progress' \
-                -F details_url=$WORKFLOW_URL \
+                -F details_url="$WORKFLOW_URL" \
                 -F output[title]='Exhaustive Tests' \
                 -F output[summary]='Running exhaustive tests for ICU4C' \
-                -F output[text]=${{ env.WORKFLOW_URL }} \
+                -F output[text]="$WORKFLOW_URL" \
                 /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs \
                 -q .id)
               echo "ICU4C_CHECK_ID=$ICU4C_CHECK_ID" >> $GITHUB_ENV
             fi
           }
 
-          echo "Setting env vars for ${{ github.event_name }}"
+          echo "Setting env vars for $GITHUB_EVENT_NAME"
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             set_vars "" "true" "false"
-          elif [[ "$GITHUB_EVENT_NAME" = "issue_comment" ]] && [[ "${{ github.event.comment.body }}" == *"${{ vars.PR_COMMENT_TRIGGER_TEXT }}"* ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" = "issue_comment" ]] && [[ "${{ github.event.comment.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
             set_vars "${{ github.event.issue.pull_request.url }}" "true" "true"
-          elif [[ "$GITHUB_EVENT_NAME" = "pull_request" ]] && [[ "${{ github.event.pull_request.body }}" == *"${{ vars.PR_COMMENT_TRIGGER_TEXT }}"* ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" = "pull_request" ]] && [[ "${{ github.event.pull_request.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
             set_vars "${{ github.event.pull_request.url }}" "true" "true"
           else
-            echo "Setting env vars for a different event or ${{ vars.PR_COMMENT_TRIGGER_TEXT }} not found in comments. We will be skipping."
+            echo "Setting env vars for a different event or PR_COMMENT_TRIGGER_TEXT not found in comments. We will be skipping."
             set_vars "" "false" "false"
           fi
 
