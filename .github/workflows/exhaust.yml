@@ -85,7 +85,7 @@ jobs:
           fi
 
           echo "Variable setup done"
-          echo $GITHUB_ENV
+          cat $GITHUB_ENV
 
 
   # Runs exhaustive tests for ICU4J on Linux
