@@ -82,18 +82,20 @@ jobs:
           else
             echo "Setting env vars for a different event or PR_COMMENT_TRIGGER_TEXT not found in comments. We will be skipping."
             set_vars "" "false" "false"
+            exit 76 # report that this job was skipped
           fi
 
           echo "Variable setup done"
           cat $GITHUB_ENV
           echo "vars.rt: ${{ vars.RUN_TESTS}}"
           echo "vars.up: ${{ vars.UPDATE_PR}}"
+          echo "env.rt: ${{ env.RUN_TESTS}}"
+          echo "env.up: ${{ env.UPDATE_PR}}"
 
 
   # Runs exhaustive tests for ICU4J on Linux
   icu4j-linux:
     needs: gha-setenv
-    if: ${{ vars.RUN_TESTS}}
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -109,7 +111,7 @@ jobs:
           cd icu4j && cat `find . -name surefire-reports -type d -exec grep -l  -r --include="*.txt" FAILED {} \;`
         timeout-minutes: 2
       - name: Complete the check
-        if: always() && ${{ vars.UPDATE_PR }}
+        if: always() && ${{ env.UPDATE_PR }}
         run: |
           STATUS="completed"
           CONCLUSION="success"
@@ -129,7 +131,6 @@ jobs:
 
   icu4c-linux-clang:
     needs: gha-setenv
-    if: ${{ vars.RUN_TESTS}}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -144,7 +145,7 @@ jobs:
           CC: clang
           CXX: clang++
       - name: Complete the check
-        if: always() && ${{ vars.UPDATE_PR }}
+        if: always() && ${{ env.UPDATE_PR }}
         run: |
           STATUS="completed"
           CONCLUSION="success"
