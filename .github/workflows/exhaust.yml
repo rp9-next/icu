@@ -18,7 +18,7 @@ jobs:
 
   # Sets environment variables based on the GitHub event
   gha-setenv:
-    runs-on: macos-latest # Run on macos because runners are allocated quicker than linux
+    runs-on: ubuntu-latest
     steps:
       - name: Set env vars
         run: |
