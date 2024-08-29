@@ -2,6 +2,8 @@ name: Exhaustive Tests for ICU
 
 env:
   PR_COMMENT_TRIGGER_TEXT: "run exhaustive tests"
+  RUN_TESTS: true
+  UPDATE_PR: true
 
 on:
   workflow_dispatch:
