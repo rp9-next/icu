@@ -18,7 +18,7 @@ jobs:
 
   # Sets environment variables based on the github event
   gha-setenv:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest # Run on macos becuase runners are allocated quicker than linux
     steps:
       - name: Set env vars
         run: |
@@ -71,16 +71,17 @@ jobs:
           }
 
           echo "Setting env vars for ${{ github.event_name }}"
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             set_vars "" "true" "false"
-          elif [ "${{ github.event_name }}" == "issue_comment" ] && [[ "${{ github.event.comment.body }}" == *"${{ vars.PR_COMMENT_TRIGGER_TEXT }}"* ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" = "issue_comment" ]] && [[ "${{ github.event.comment.body }}" == *"${{ vars.PR_COMMENT_TRIGGER_TEXT }}"* ]]; then
             set_vars "${{ github.event.issue.pull_request.url }}" "true" "true"
-          elif [ "${{ github.event_name }}" == "pull_request" ] && [[ "${{ github.event.pull_request.body }}" == *"${{ vars.PR_COMMENT_TRIGGER_TEXT }}"* ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" = "pull_request" ]] && [[ "${{ github.event.pull_request.body }}" == *"${{ vars.PR_COMMENT_TRIGGER_TEXT }}"* ]]; then
             set_vars "${{ github.event.pull_request.url }}" "true" "true"
           else
-            echo "Setting env vars for a different event or ${{ env.PR_COMMENT_TRIGGER_TEXT }} not found in comments. We will be skipping"
+            echo "Setting env vars for a different event or ${{ vars.PR_COMMENT_TRIGGER_TEXT }} not found in comments. We will be skipping."
             set_vars "" "false" "false"
           fi
+
           echo "Variable setup done"
           echo $GITHUB_ENV
 
