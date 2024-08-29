@@ -1,15 +1,3 @@
-# Copyright (C) 2016 and later: Unicode, Inc. and others.
-# License & terms of use: http://www.unicode.org/copyright.html
-#
-# GitHub Actions configuration for Exhaustive Tests for ICU.
-# 
-# Note: The exhaustive test configuration is in a separate file
-# so that it can be run independently from the regular builds.
-#
-# To run these tests, comment on a PR with "run exhaustive tests" 
-# or manually trigger the workflow. If triggered from a PR comment,
-# it adds checks to the PR and updates them with the results.
-
 name: Exhaustive Tests for ICU
 
 env:
@@ -18,7 +6,9 @@ env:
 on:
   workflow_dispatch:
   issue_comment:
-    types: [created]
+    types: [created, edited]
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   checks: write
@@ -30,14 +20,16 @@ jobs:
   icu4j-linux:
     if: github.event.issue.pull_request != null &&
         (contains(github.event_name, 'workflow_dispatch') ||
-         contains(github.event.comment.body, ${{ env.PR_COMMENT_TRIGGER_TEXT }}))
+         contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+         contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}))
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Fetch PR Details
         id: pr-details
-        if: contains(github.event.comment.body, ${{ env.PR_COMMENT_TRIGGER_TEXT }})
+        if: contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+            contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }})
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           gh api "${{ github.event.issue.pull_request.url }}" > pr.json
@@ -47,7 +39,8 @@ jobs:
           echo "SHA=$SHA" >> $GITHUB_ENV
       - name: Add a check to the PR
         id: add-check
-        if: contains(github.event.comment.body, ${{ env.PR_COMMENT_TRIGGER_TEXT }})
+        if: contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+           contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }})
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo $WORKFLOW_URL
@@ -75,7 +68,8 @@ jobs:
           cd icu4j && cat `find . -name surefire-reports -type d -exec grep -l  -r --include="*.txt" FAILED {} \;`
         timeout-minutes: 2
       - name: Complete the check
-        if: always() && contains(github.event.comment.body, ${{ env.PR_COMMENT_TRIGGER_TEXT }})
+        if: always() && contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+           contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }})
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
@@ -95,14 +89,18 @@ jobs:
 
 
   icu4c-linux-clang:
-    if: contains(github.event_name, 'workflow_dispatch') || contains(github.event.comment.body, 'run exhaustive tests')
+    if: github.event.issue.pull_request != null &&
+      (contains(github.event_name, 'workflow_dispatch') ||
+      contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+      contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}))
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Fetch PR Details
         id: pr-details
-        if: contains(github.event.comment.body, 'run exhaustive tests')
+        if: contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+           contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }})
         run: |
           echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
           gh api "${{ github.event.issue.pull_request.url }}" > pr.json
@@ -112,7 +110,8 @@ jobs:
           echo "SHA=$SHA" >> $GITHUB_ENV
       - name: Add a check to the PR
         id: add-check
-        if: contains(github.event.comment.body, ${{ env.PR_COMMENT_TRIGGER_TEXT }})
+        if: contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+           contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }})
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo $WORKFLOW_URL
@@ -139,7 +138,8 @@ jobs:
           CC: clang
           CXX: clang++
       - name: Complete the check
-        if: always() && contains(github.event.comment.body, ${{ env.PR_COMMENT_TRIGGER_TEXT }})
+        if: always() && contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+           contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }})
         run: |
           WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
