@@ -29,7 +29,7 @@ jobs:
       - name: Print event details
         run: |
           echo "Event name: ${{ github.event_name }}"
-          echo "Event: ${{ github.event }}"
+          echo "Event: ${{ toJSON(github.event) }}"
       - name: Fetch PR Details
         id: pr-details
         if: contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
