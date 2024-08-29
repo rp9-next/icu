@@ -1,3 +1,15 @@
+# Copyright (C) 2016 and later: Unicode, Inc. and others.
+# License & terms of use: http://www.unicode.org/copyright.html
+#
+# GitHub Actions configuration for Exhaustive Tests for ICU.
+# 
+# Note: The exhaustive test configuration is in a separate file
+# so that it can be run independently from the regular builds.
+#
+# To run these tests, comment on a PR with "run exhaustive tests" 
+# or manually trigger the workflow. If triggered from a PR comment,
+# it adds checks to the PR and updates them with the results.
+
 name: Exhaustive Tests for ICU
 
 env:
@@ -15,89 +27,59 @@ permissions:
   pull-requests: write
 
 jobs:
-
-  # Sets environment variables based on the GitHub event
-  gha-setenv:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set env vars
-        run: |
-          set_vars() {
-            local pr_url="$1"
-            local run_tests="$2"
-            local update_pr="$3"
-
-            echo "RUN_TESTS=$run_tests" >> $GITHUB_ENV
-            echo "UPDATE_PR=$update_pr" >> $GITHUB_ENV
-
-            WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            echo "WORKFLOW_URL=$WORKFLOW_URL" >> $GITHUB_ENV
-
-            if [ "$update_pr" = "true" ]; then
-              echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
-              gh api "$pr_url" > pr.json
-              PR_NUMBER=$(jq -r '.number' pr.json)
-              SHA=$(jq -r '.head.sha' pr.json)
-              echo "PR_URL=$pr_url" >> $GITHUB_ENV
-              echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-              echo "SHA=$SHA" >> $GITHUB_ENV
-
-              ICU4J_CHECK_ID=$(gh api \
-                -X POST \
-                -F name='Exhaustive Tests / ICU4J' \
-                -F head_sha="$SHA" \
-                -F status='in_progress' \
-                -F details_url="$WORKFLOW_URL" \
-                -F output[title]='Exhaustive Tests' \
-                -F output[summary]='Running exhaustive tests for ICU4J' \
-                -F output[text]="$WORKFLOW_URL" \
-                /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs \
-                -q .id)
-              echo "ICU4J_CHECK_ID=$ICU4J_CHECK_ID" >> $GITHUB_ENV
-
-              ICU4C_CHECK_ID=$(gh api \
-                -X POST \
-                -F name='Exhaustive Tests / ICU4C' \
-                -F head_sha="$SHA" \
-                -F status='in_progress' \
-                -F details_url="$WORKFLOW_URL" \
-                -F output[title]='Exhaustive Tests' \
-                -F output[summary]='Running exhaustive tests for ICU4C' \
-                -F output[text]="$WORKFLOW_URL" \
-                /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs \
-                -q .id)
-              echo "ICU4C_CHECK_ID=$ICU4C_CHECK_ID" >> $GITHUB_ENV
-            fi
-          }
-
-          echo "Setting env vars for $GITHUB_EVENT_NAME"
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            set_vars "" "true" "false"
-          elif [[ "$GITHUB_EVENT_NAME" = "issue_comment" && "${{ github.event.comment.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
-            set_vars "${{ github.event.issue.pull_request.url }}" "true" "true"
-          elif [[ "$GITHUB_EVENT_NAME" = "pull_request" && "${{ github.event.pull_request.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
-            set_vars "${{ github.event.pull_request.url }}" "true" "true"
-          else
-            echo "Setting env vars for a different event or PR_COMMENT_TRIGGER_TEXT not found in comments. We will be skipping."
-            set_vars "" "false" "false"
-            exit 0 
-          fi
-
-          echo "Variable setup done"
-          cat $GITHUB_ENV
-          echo "vars.rt: ${{ vars.RUN_TESTS}}"
-          echo "vars.up: ${{ vars.UPDATE_PR}}"
-          echo "env.rt: ${{ env.RUN_TESTS}}"
-          echo "env.up: ${{ env.UPDATE_PR}}"
-
-
   # Runs exhaustive tests for ICU4J on Linux
   icu4j-linux:
-    needs: gha-setenv
+    if: |
+        (contains(github.event_name, 'workflow_dispatch') ||
+         contains(github.event_name, 'issue_comment') && contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+         contains(github.event_name, 'pull_request') && contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}))
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Set flags
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "UPDATE_PR=false" >> $GITHUB_ENV
+          elif [[ "$GITHUB_EVENT_NAME" = "issue_comment" && "${{ github.event.comment.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
+            echo "UPDATE_PR=true" >> $GITHUB_ENV
+            echo "PR_URL="${{ github.event.issue.pull_request.url }}">> $GITHUB_ENV
+          elif [[ "$GITHUB_EVENT_NAME" = "pull_request" && "${{ github.event.pull_request.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
+            echo "UPDATE_PR=true" >> $GITHUB_ENV
+            echo "PR_URL="${{ github.event.pull_request.url }}" >> $GITHUB_ENV
+          else
+            echo "We should not be here. Exiting."
+            exit 0 
+          fi
+      - name: Fetch PR Details
+        id: pr-details
+        if:  ${{ env.UPDATE_PR }}
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          gh api "${{ env.PR_URL }}" > pr.json
+          PR_NUMBER=$(jq -r '.number' pr.json)
+          SHA=$(jq -r '.head.sha' pr.json)
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          echo "SHA=$SHA" >> $GITHUB_ENV
+      - name: Add a check to the PR
+        id: add-check
+        if: ${{ env.UPDATE_PR }}
+        run: |
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo $WORKFLOW_URL
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          CHECK_ID=$(gh api \
+            -X POST \
+            -F name='Exhaustive Tests / ICU4J' \
+            -F head_sha="${{ env.SHA }}" \
+            -F status='in_progress' \
+            -F details_url=$WORKFLOW_URL \
+            -F output[title]='Exhaustive Tests' \
+            -F output[summary]='Running exhaustive tests for ICU4J' \
+            -F output[text]=$WORKFLOW_URL \
+            /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs \
+            -q .id)
+          echo "CHECK_ID=$CHECK_ID" >> $GITHUB_ENV
       - name: Build and Exhaustive Tests
         run: |
           echo "Building ICU4J" && cd icu4j && mvn install -DICU.exhaustive=10
@@ -111,6 +93,7 @@ jobs:
       - name: Complete the check
         if: always() && ${{ env.UPDATE_PR }}
         run: |
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
           CONCLUSION="success"
           if [ "${{ job.status }}" != "success" ]; then
@@ -120,19 +103,65 @@ jobs:
             -X PATCH \
             -F status="$STATUS" \
             -F conclusion="$CONCLUSION" \
-            -F details_url="${{ env.WORKFLOW_URL }}" \
+            -F details_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             -F output[title]='Exhaustive Tests' \
             -F output[summary]='Completed exhaustive tests for ICU4J' \
-            -F details_url="${{ env.WORKFLOW_URL }}" \
-            /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs/${{ env.ICU4J_CHECK_ID }}
+            -F output[text]=$WORKFLOW_URL \
+            /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs/${{ env.CHECK_ID }}
 
 
   icu4c-linux-clang:
-    needs: gha-setenv
+    if: |
+        (contains(github.event_name, 'workflow_dispatch') ||
+         contains(github.event_name, 'issue_comment') && contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}) ||
+         contains(github.event_name, 'pull_request') && contains(github.event.pull_request.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }}))
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Set flags
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "UPDATE_PR=false" >> $GITHUB_ENV
+          elif [[ "$GITHUB_EVENT_NAME" = "issue_comment" && "${{ github.event.comment.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
+            echo "UPDATE_PR=true" >> $GITHUB_ENV
+            echo "PR_URL="${{ github.event.issue.pull_request.url }}">> $GITHUB_ENV
+          elif [[ "$GITHUB_EVENT_NAME" = "pull_request" && "${{ github.event.pull_request.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
+            echo "UPDATE_PR=true" >> $GITHUB_ENV
+            echo "PR_URL="${{ github.event.pull_request.url }}" >> $GITHUB_ENV
+          else
+            echo "We should not be here. Exiting."
+            exit 0 
+          fi
+      - name: Fetch PR Details
+        id: pr-details
+        if:  ${{ env.UPDATE_PR }}
+        run: |
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          gh api "${{ env.PR_URL }}" > pr.json
+          PR_NUMBER=$(jq -r '.number' pr.json)
+          SHA=$(jq -r '.head.sha' pr.json)
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          echo "SHA=$SHA" >> $GITHUB_ENV
+      - name: Add a check to the PR
+        id: add-check
+        if: ${{ env.UPDATE_PR }}
+        run: |
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo $WORKFLOW_URL
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          CHECK_ID=$(gh api \
+            -X POST \
+            -F name='Exhaustive Tests / ICU4C' \
+            -F head_sha="${{ env.SHA }}" \
+            -F status='in_progress' \
+            -F details_url=$WORKFLOW_URL \
+            -F output[title]='Exhaustive Tests' \
+            -F output[summary]='Running exhaustive tests for ICU4C' \
+            -F output[text]=$WORKFLOW_URL \
+            /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs \
+            -q .id)
+          echo "CHECK_ID=$CHECK_ID" >> $GITHUB_ENV
       - name: Build
         run: |
           cd icu4c/source && ./runConfigureICU Linux/clang && make -j -l4.5
@@ -143,8 +172,9 @@ jobs:
           CC: clang
           CXX: clang++
       - name: Complete the check
-        if: always() && ${{ env.UPDATE_PR }}
+        if: always() && contains(github.event.comment.body, ${{ vars.PR_COMMENT_TRIGGER_TEXT }})
         run: |
+          WORKFLOW_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           STATUS="completed"
           CONCLUSION="success"
           if [ "${{ job.status }}" != "success" ]; then
@@ -154,8 +184,8 @@ jobs:
             -X PATCH \
             -F status="$STATUS" \
             -F conclusion="$CONCLUSION" \
-            -F details_url="${{ env.WORKFLOW_URL }}" \
+            -F details_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             -F output[title]='Exhaustive Tests' \
             -F output[summary]='Completed exhaustive tests for ICU4C' \
-            -F output[text]=${{ env.WORKFLOW_URL }} \
-            /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs/${{ env.ICU4C_CHECK_ID }}
+            -F output[text]=$WORKFLOW_URL \
+            /repos/${{ github.repository_owner }}/${{ github.event.repository.name }}/check-runs/${{ env.CHECK_ID }}
