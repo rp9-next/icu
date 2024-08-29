@@ -73,9 +73,9 @@ jobs:
           echo "Setting env vars for $GITHUB_EVENT_NAME"
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
             set_vars "" "true" "false"
-          elif [[ "$GITHUB_EVENT_NAME" = "issue_comment" ]] && [[ "${{ github.event.comment.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" = "issue_comment" && "${{ github.event.comment.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
             set_vars "${{ github.event.issue.pull_request.url }}" "true" "true"
-          elif [[ "$GITHUB_EVENT_NAME" = "pull_request" ]] && [[ "${{ github.event.pull_request.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
+          elif [[ "$GITHUB_EVENT_NAME" = "pull_request" && "${{ github.event.pull_request.body }}" == *"${PR_COMMENT_TRIGGER_TEXT}"* ]]; then
             set_vars "${{ github.event.pull_request.url }}" "true" "true"
           else
             echo "Setting env vars for a different event or PR_COMMENT_TRIGGER_TEXT not found in comments. We will be skipping."
@@ -84,6 +84,7 @@ jobs:
 
           echo "Variable setup done"
           echo $GITHUB_ENV
+
 
   # Runs exhaustive tests for ICU4J on Linux
   icu4j-linux:
