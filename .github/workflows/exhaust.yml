@@ -80,7 +80,7 @@ jobs:
           else
             echo "Setting env vars for a different event or PR_COMMENT_TRIGGER_TEXT not found in comments. We will be skipping."
             set_vars "" "false" "false"
-            exit 78 # report that this job was skipped
+            exit 0 
           fi
 
           echo "Variable setup done"
