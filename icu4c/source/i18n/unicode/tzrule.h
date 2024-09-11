@@ -328,6 +328,24 @@ public:
     virtual UBool getPreviousStart(UDate base, int32_t prevRawOffset, int32_t prevDSTSavings,
         UBool inclusive, UDate& result) const override;
 
+    /**
+     * Return true if the given <code>TimeZoneRule</code> objects are semantically equal. Objects
+     * of different subclasses are considered unequal.
+     * @param that  The object to be compared with.
+     * @return  true if the given <code>TimeZoneRule</code> objects are semantically equal.
+     * @ ICU 3.8
+     */
+    virtual bool operator==(const InitialTimeZoneRule& that) const;
+
+    /**
+     * Return true if the given <code>TimeZoneRule</code> objects are semantically unequal. Objects
+     * of different subclasses are considered unequal.
+     * @param that  The object to be compared with.
+     * @return  true if the given <code>TimeZoneRule</code> objects are semantically unequal.
+     * @stable ICU 3.8
+     */
+    virtual bool operator!=(const InitialTimeZoneRule& that) const;
+
 public:
     /**
      * Return the class ID for this class. This is useful only for comparing to

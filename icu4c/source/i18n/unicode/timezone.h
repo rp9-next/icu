@@ -549,7 +549,7 @@ public:
      *              otherwise.
      * @stable ICU 2.0
      */
-    bool operator!=(const TimeZone& that) const {return !operator==(that);}
+    virtual bool operator!=(const TimeZone& that) const {return !operator==(that);}
 
     /**
      * Returns the TimeZone's adjusted GMT offset (i.e., the number of milliseconds to add
