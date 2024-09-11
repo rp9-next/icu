@@ -132,6 +132,18 @@ InitialTimeZoneRule::operator!=(const TimeZoneRule& that) const {
     return !operator==(that);
 }
 
+bool
+InitialTimeZoneRule::operator==(const InitialTimeZoneRule& that) const {
+    return ((this == &that) ||
+            (typeid(*this) == typeid(that) &&
+            TimeZoneRule::operator==(that)));
+}
+
+bool
+InitialTimeZoneRule::operator!=(const InitialTimeZoneRule& that) const {
+    return !operator==(that);
+}
+
 UBool
 InitialTimeZoneRule::isEquivalentTo(const TimeZoneRule& other) const {
     if (this == &other) {
