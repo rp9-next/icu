@@ -329,7 +329,7 @@ jobs:
           run: |
             wget https://apt.llvm.org/llvm.sh
             chmod u+x llvm.sh
-            ./llvm.sh 18
+            sudo ./llvm.sh 18
             clang-18 --version
         - name: Clang-18 build and Test
           env:
