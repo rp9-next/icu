@@ -335,7 +335,7 @@ jobs:
           env:
             CC: clang-18
             CXX: clang++-18
-            CPPFLAGS: '-Werror -Wno-error=strict-prototypes'
+            CPPFLAGS: '-Werror -Wno-error=strict-prototypes -Wno-ambiguous-reversed-operator'
             CXXFLAGS: ${{ matrix.flags }}
           run: |
             cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
