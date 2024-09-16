@@ -327,10 +327,8 @@ jobs:
         - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         - name: Install Clang-18
           run: |
-            wget https://apt.llvm.org/llvm.sh
-            chmod u+x llvm.sh
-            sudo ./llvm.sh 18 all
-            clang-18 --version
+            sudo apt update
+            sudo apt install -y clang-18 libc++-18-dev
         - name: Clang-18 build and Test
           env:
             CC: clang-18
