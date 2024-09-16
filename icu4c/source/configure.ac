@@ -6,15 +6,16 @@ AC_COPYRIGHT([ Copyright (C) 2016 and later: Unicode, Inc. and others. License &
 
 # NOTE: please use 'autoreconf' to rebuild, otherwise 'aclocal && autoconf'.
 
-# Check for autoconf version
-AC_PREREQ(2.69)
+# Check for minimum autoconf version. Use exactly this version when rebuilding
+# 'aclocal.m4' and 'configure' for merging upstream, to avoid spurious diffs.
+AC_PREREQ([2.72])
 
 # Process this file with autoreconf to produce a configure script
 AC_INIT([ICU],
-        m4_esyscmd_s([sed -n 's/^[ 	]*#[ 	]*define[ 	]*U_ICU_VERSION[ 	]*"\([^"]*\)".*/\1/p' "./common/unicode/uvernum.h]"),
-        [http://icu-project.org/bugs],
-        [International Components for Unicode],
-        [http://icu-project.org])
+        m4_esyscmd_s([sed -n 's/^[ 	]*#[ 	]*define[ 	]*U_ICU_VERSION[ 	]*"\([^"]*\)".*/\1/p' common/unicode/uvernum.h]),
+        [https://icu.unicode.org/bugs],
+        [icu4c],
+        [https://icu.unicode.org/])
 
 # Instruct Python to never write any byte code to the ICU source tree.
 PYTHONDONTWRITEBYTECODE=1
@@ -186,9 +187,6 @@ if test "$srcdir" = "."; then
   fi
 fi
 
-#AC_CHECK_PROG(AUTOCONF, autoconf, autoconf, true)
-#AC_CHECK_PROG(STRIP, strip, strip, true)
-
 # TODO(ICU-20301): Remove fallback to Python 2.
 AC_CHECK_PROGS(PYTHON, python3 "py -3" python "py")
 AC_SUBST(PYTHON)
@@ -338,24 +336,6 @@ AC_ARG_ENABLE(auto-cleanup,
 )
 AC_MSG_RESULT($enabled)
 AC_SUBST(UCLN_NO_AUTO_CLEANUP)
-
-# MSVC floating-point option
-MSVC_RELEASE_FLAG=""
-if test $enabled = yes
-then
-    if test $icu_cv_host_frag = mh-cygwin-msvc -o $icu_cv_host_frag = mh-msys-msvc
-    then
-        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-    #if defined _MSC_VER && _MSC_VER >= 1400
-    #else
-    Microsoft Visual C++ < 2005
-    #endif
-        ]], [[]])],[MSVC_RELEASE_FLAG="/fp:precise"],[MSVC_RELEASE_FLAG="/Op"])
-
-        CFLAGS="${CFLAGS} ${MSVC_RELEASE_FLAG}"
-        CXXFLAGS="${CXXFLAGS} ${MSVC_RELEASE_FLAG}"
-    fi
-fi
 
 # Check whether to enabled draft APIs
 AC_MSG_CHECKING([whether to enable draft APIs])
@@ -673,14 +653,13 @@ fi
 AC_SUBST(U_HAVE_DIRENT_H)
 
 # Check for endianness
-AC_C_BIGENDIAN()
-if test $ac_cv_c_bigendian = no; then
-U_IS_BIG_ENDIAN=0
-U_ENDIAN_CHAR="l"
-else
-U_IS_BIG_ENDIAN=1
-U_ENDIAN_CHAR="b"
-fi
+AC_C_BIGENDIAN([
+    U_IS_BIG_ENDIAN=1
+    U_ENDIAN_CHAR="b"
+  ], [
+    U_IS_BIG_ENDIAN=0
+    U_ENDIAN_CHAR="l"
+  ], [], AC_MSG_ERROR([universal endianness not supported]))
 AC_SUBST(U_IS_BIG_ENDIAN)
 
 # Do various POSIX related checks
@@ -710,20 +689,7 @@ fi
 AC_SUBST(U_HAVE_NL_LANGINFO_CODESET)
 AC_SUBST(U_NL_LANGINFO_CODESET)
 
-# Namespace support checks
 AC_LANG(C++)
-AC_MSG_CHECKING([for namespace support])
-AC_CACHE_VAL(ac_cv_namespace_ok,
-    [AC_LINK_IFELSE([AC_LANG_PROGRAM([namespace x_version {void f(){}}
-    namespace x = x_version;
-    using namespace x_version;
-    ], [f();])],[ac_cv_namespace_ok=yes],[ac_cv_namespace_ok=no])] )
-AC_MSG_RESULT($ac_cv_namespace_ok)
-if test $ac_cv_namespace_ok = no
-then
-    AC_MSG_ERROR(Namespace support is required to build ICU.)
-fi
-
 AC_MSG_CHECKING([for properly overriding new and delete])
 U_OVERRIDE_CXX_ALLOCATION=0
 U_HAVE_PLACEMENT_NEW=0
