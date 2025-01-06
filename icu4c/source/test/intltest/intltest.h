@@ -276,7 +276,7 @@ public:
 
 
 
-    enum { kMaxProps = 16 };
+    static const int kMaxProps = 16;
 
     virtual void setProperty(const char* propline);
     virtual const char* getProperty(const char* prop);

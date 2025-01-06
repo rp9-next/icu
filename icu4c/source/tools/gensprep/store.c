@@ -388,7 +388,7 @@ storeMapping(uint32_t codepoint, uint32_t* mapping,int32_t length,
     }
 
     /* figure out the real length */
-    for(i=0; i<length; i++){
+    for(i=0; i<(int16_t)length; i++){
         adjustedLen += U16_LENGTH(mapping[i]);
     }
 

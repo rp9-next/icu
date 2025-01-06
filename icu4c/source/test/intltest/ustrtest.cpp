@@ -1793,7 +1793,7 @@ UnicodeStringTest::TestStringEnumeration() {
     }
     status=U_ZERO_ERROR;
     if(uenum_next(uten, &length, &status)!=nullptr) {
-        errln("File %s, line %d, uenum_next(done)!=nullptr");
+        errln("File %s, line %d, uenum_next(done)!=nullptr" __FILE__, __LINE__);
     }
 
     // test the uenum_unext()

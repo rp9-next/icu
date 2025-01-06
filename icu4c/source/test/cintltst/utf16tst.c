@@ -33,7 +33,7 @@
 #if !U_HIDE_OBSOLETE_UTF_OLD_H
 static void printUChars(const UChar *uchars) {
     int16_t i=0;
-    for(i=0; i<u_strlen(uchars); i++) {
+    for(i=0; i<(int16_t)u_strlen(uchars); i++) {
         printf("%x ", *(uchars+i));
     }
 }
